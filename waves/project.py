@@ -24,6 +24,8 @@ import numpy_financial as npf
 import matplotlib.pyplot as plt
 from attrs import field, define
 from ORBIT import ProjectManager, load_config
+from ORBIT.phases.design import CustomMooringSystemDesign
+from ORBIT.phases.install import MooringSystemSupplyChain
 from floris import WindRose, TimeSeries, FlorisModel
 from wombat.core import Simulation
 from wombat.core.data_classes import FromDictMixin
@@ -517,6 +519,13 @@ class Project(FromDictMixin):
 
         if TYPE_CHECKING:
             assert isinstance(self.weather, pd.DataFrame)  # mypy helper
+        
+        try:
+            ProjectManager.register_design_phase(CustomMooringSystemDesign)
+            ProjectManager.register_install_phase(MooringSystemSupplyChain)
+        except ValueError:
+            pass
+        
         self.orbit = ProjectManager(
             self.orbit_config_dict,
             library_path=str(self.library_path),

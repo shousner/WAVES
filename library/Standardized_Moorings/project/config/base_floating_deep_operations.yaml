@@ -4,13 +4,13 @@ service_equipment:
   - [ctv.yaml, 3]
   - [dsv.yaml, 2]
   - ahv.yaml
-layout: base_floating_deep_layout.csv
+layout: base_floating_deep_layout_standmoor.csv
 inflation_rate: 0
 fixed_costs: fixed_costs_FAD.yaml
 workday_start: 6
 workday_end: 22
 start_year: 1999
 end_year: 2018
-project_capacity: 1005
+project_capacity: 600
 port_distance: 53
 port: port_53km.yaml
