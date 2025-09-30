@@ -645,7 +645,7 @@ def plot_LCOE_waterfall(technology, df, width=8, height=6, y_min=None, y_max=Non
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     plt.tight_layout()
-    #plt.savefig("Figures/" + technology + '_LCOE_waterfall.png', format='png', dpi=300)
+    fig.savefig("C:\\Code\\WAVES\\library\\Standardized_Moorings\\results\\LCOE_waterfall.png", bbox_inches='tight')
     plt.show()
 
 
@@ -730,7 +730,8 @@ def create_waterfall_chart(df_1, total_1, df_2, total_2, color_2):
     ax.set_xticklabels(labels)
     
     # Set y-axis limit
-    ax.set_ylim([128, 133.5])
+    ax.set_ylim([115, 118.5])
+    #ax.set_ylim([128, 133.5])
     #plt.grid(axis = 'y', zorder = 100)
     from matplotlib.ticker import MaxNLocator
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
@@ -738,14 +739,14 @@ def create_waterfall_chart(df_1, total_1, df_2, total_2, color_2):
 
     
     fig.tight_layout()
-    #plt.savefig("library/results/figures/"+  total_2 + ".svg", bbox_inches='tight')
+    fig.savefig("C:\\Code\\WAVES\\library\\Standardized_Moorings\\results\\comparison_waterfall.png", bbox_inches='tight')
 
     plt.show()
 
 
 
-project_floating1 = runRunWAVES(1, Path("library/Standardized_Moorings/"))
-project_floating2 = runRunWAVES(1, Path("library/Standardized_Moorings2/"))
+project_floating1 = runRunWAVES(10, Path("library/Standardized_Moorings/"))
+project_floating2 = runRunWAVES(10, Path("library/Standardized_Moorings2/"))
 '''
 project_floating1 = runRunWAVES(10, Path("library/Standardized_Moorings3/"))
 project_floating2 = runRunWAVES(10, Path("library/Standardized_Moorings4/"))
@@ -780,6 +781,10 @@ capex2 = project_floating2.orbit.total_capex
 aep_per_kw1 = project_floating1.energy_production(units="mw", per_capacity="kw", aep=True)
 aep_per_kw2 = project_floating2.energy_production(units="mw", per_capacity="kw", aep=True)
 
+print(capex1)
+print(capex2)
+print(aep_per_kw1)
+print(aep_per_kw2)
 
 opex_df1 = project_floating1.wombat.metrics.opex(frequency='annual', by_category=True) / project_floating1.capacity("kw")
 average_opex1 = opex_df1["OpEx"].mean()

@@ -260,20 +260,54 @@ direct_drive_generator:
 supporting_structure:
   name: Supporting Structure
   maintenance:
-  - description: structural annual inspection
-    time: 24
-    materials: 600
+  - description: N/A
+    time: 0
+    materials: 0
     service_equipment: CTV
-    frequency: 1
-    frequency_basis: date-years
-    start_date: "04/01/1999" 
-  - description: structural subsea inspection
-    time: 6
-    materials: 500
+    frequency: 0
+  failures:
+  - description: Na
+    scale: 0
+    shape: 0
+    time: 0
+    materials: 0
+    service_equipment: CTV
+    level: 0
+    operation_reduction: 0
+anchor:
+  name: Anchor
+  maintenance:
+  - description: Na
+    time: 0
+    materials: 0
     service_equipment: DSV
-    frequency: 2
-    frequency_basis: date-years
-    start_date: "04/01/1999" 
+    frequency: 0
+  failures:
+  - scale: 66.67
+    shape: 1
+    time: 240
+    materials: 75000
+    service_equipment: AHV
+    operation_reduction: 1.0
+    level: 1
+    description: Major Repair
+  - scale: 80
+    shape: 1
+    time: 360
+    materials: 512000
+    service_equipment: AHV
+    operation_reduction: 1
+    replacement: true
+    level: 2
+    description: Replacement
+mooring_line:
+  name: Mooring Line
+  maintenance:
+  - description: Na
+    time: 0
+    materials: 0
+    service_equipment: DSV
+    frequency: 0
   failures:
   - scale: 8.33
     shape: 1
@@ -282,182 +316,19 @@ supporting_structure:
     service_equipment: CTV
     operation_reduction: 0
     level: 1
-    description: marine growth removal
-anchor1:
-  name: Anchor
-  maintenance:
-  - description: Na
-    time: 0
-    materials: 0
-    service_equipment: DSV
-    frequency: 0
-  failures:
-  - scale: 200
-    shape: 1
-    time: 240
-    materials: 25000
-    service_equipment: AHV
-    operation_reduction: 1.0
-    level: 1
-    description: Major Repair
-  - scale: 240
-    shape: 1
-    time: 360
-    materials: 170666.6667
-    service_equipment: AHV
-    operation_reduction: 1
-    replacement: true
-    level: 2
-    description: Replacement
-anchor2:
-  name: Anchor
-  maintenance:
-  - description: Na
-    time: 0
-    materials: 0
-    service_equipment: DSV
-    frequency: 0
-  failures:
-  - scale: 200
-    shape: 1
-    time: 240
-    materials: 25000
-    service_equipment: AHV
-    operation_reduction: 1.0
-    level: 1
-    description: Major Repair
-  - scale: 240
-    shape: 1
-    time: 360
-    materials: 170666.6667
-    service_equipment: AHV
-    operation_reduction: 1
-    replacement: true
-    level: 2
-    description: Replacement
-anchor3:
-  name: Anchor
-  maintenance:
-  - description: Na
-    time: 0
-    materials: 0
-    service_equipment: DSV
-    frequency: 0
-  failures:
-  - scale: 200
-    shape: 1
-    time: 240
-    materials: 25000
-    service_equipment: AHV
-    operation_reduction: 1.0
-    level: 1
-    description: Major Repair
-  - scale: 240
-    shape: 1
-    time: 360
-    materials: 170666.6667
-    service_equipment: AHV
-    operation_reduction: 1
-    replacement: true
-    level: 2
-    description: Replacement
-mooring_line1:
-  name: Mooring Line
-  maintenance:
-  - description: Na
-    time: 0
-    materials: 0
-    service_equipment: DSV
-    frequency: 0
-  failures:
-  - scale: 25
-    shape: 1
-    time: 40
-    materials: 500
-    service_equipment: CTV
-    operation_reduction: 0
-    level: 1
     description: Minor Repair
-  - scale: 200
+  - scale: 66.67
     shape: 1
     time: 240
-    materials: 6666.6667
+    materials: 20000
     service_equipment: AHV
     operation_reduction: 1.0
     level: 2
     description: Major Repair
-  - scale: 240
+  - scale: 80
     shape: 1
     time: 360
-    materials: 45000
-    service_equipment: AHV
-    operation_reduction: 1
-    replacement: true
-    level: 3
-    description: Replacement
-mooring_line2:
-  name: Mooring Line
-  maintenance:
-  - description: Na
-    time: 0
-    materials: 0
-    service_equipment: DSV
-    frequency: 0
-  failures:
-  - scale: 25
-    shape: 1
-    time: 40
-    materials: 500
-    service_equipment: CTV
-    operation_reduction: 0
-    level: 1
-    description: Minor Repair
-  - scale: 200
-    shape: 1
-    time: 240
-    materials: 6666.6667
-    service_equipment: AHV
-    operation_reduction: 1.0
-    level: 2
-    description: Major Repair
-  - scale: 240
-    shape: 1
-    time: 360
-    materials: 45000
-    service_equipment: AHV
-    operation_reduction: 1
-    replacement: true
-    level: 3
-    description: Replacement
-mooring_line3:
-  name: Mooring Line
-  maintenance:
-  - description: Na
-    time: 0
-    materials: 0
-    service_equipment: DSV
-    frequency: 0
-  failures:
-  - scale: 25
-    shape: 1
-    time: 40
-    materials: 500
-    service_equipment: CTV
-    operation_reduction: 0
-    level: 1
-    description: Minor Repair
-  - scale: 200
-    shape: 1
-    time: 240
-    materials: 6666.6667
-    service_equipment: AHV
-    operation_reduction: 1.0
-    level: 2
-    description: Major Repair
-  - scale: 240
-    shape: 1
-    time: 360
-    materials: 45000
+    materials: 135000
     service_equipment: AHV
     operation_reduction: 1
     replacement: true
