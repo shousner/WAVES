@@ -720,7 +720,10 @@ def create_waterfall_chart(df_1, total_1, df_2, total_2, color_2):
     #ax.set_xticks(labels)
 
     for i in range(len(labels)):
-        value = "{:,.1f}".format(heights[i])
+        if i != 0 and i != len(labels) - 1:
+            value = "{:,.1f}".format(-heights[i])
+        else:
+            value = "{:,.1f}".format(heights[i])
         y_pos = white_bar_heights[i] + np.max([heights[i], 0])
         ax.text(labels[i], y_pos, value, ha='center', va='bottom', zorder=50)
 
@@ -731,7 +734,7 @@ def create_waterfall_chart(df_1, total_1, df_2, total_2, color_2):
     ax.set_xticklabels(labels)
     
     # Set y-axis limit
-    ax.set_ylim([115, 118.5])
+    ax.set_ylim([115, 121])
     #ax.set_ylim([128, 133.5])
     #plt.grid(axis = 'y', zorder = 100)
     from matplotlib.ticker import MaxNLocator

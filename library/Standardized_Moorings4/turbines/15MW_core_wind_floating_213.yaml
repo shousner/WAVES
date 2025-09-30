@@ -292,18 +292,18 @@ anchor1:
     service_equipment: DSV
     frequency: 0
   failures:
-  - scale: 200
+  - scale: 400
     shape: 1
     time: 240
-    materials: 25000
+    materials: 12500
     service_equipment: AHV
     operation_reduction: 1.0
     level: 1
     description: Major Repair
-  - scale: 240
+  - scale: 480
     shape: 1
     time: 360
-    materials: 170666.6667
+    materials: 85333.3333
     service_equipment: AHV
     operation_reduction: 1
     replacement: true
@@ -318,18 +318,70 @@ anchor2:
     service_equipment: DSV
     frequency: 0
   failures:
-  - scale: 200
+  - scale: 400
     shape: 1
     time: 240
-    materials: 25000
+    materials: 12500
     service_equipment: AHV
     operation_reduction: 1.0
     level: 1
     description: Major Repair
-  - scale: 240
+  - scale: 480
     shape: 1
     time: 360
-    materials: 170666.6667
+    materials: 85333.3333
+    service_equipment: AHV
+    operation_reduction: 1
+    replacement: true
+    level: 2
+    description: Replacement
+anchor3:
+  name: Anchor
+  maintenance:
+  - description: Na
+    time: 0
+    materials: 0
+    service_equipment: DSV
+    frequency: 0
+  failures:
+  - scale: 400
+    shape: 1
+    time: 240
+    materials: 12500
+    service_equipment: AHV
+    operation_reduction: 1.0
+    level: 1
+    description: Major Repair
+  - scale: 480
+    shape: 1
+    time: 360
+    materials: 85333.3333
+    service_equipment: AHV
+    operation_reduction: 1
+    replacement: true
+    level: 2
+    description: Replacement
+anchor4:
+  name: Anchor
+  maintenance:
+  - description: Na
+    time: 0
+    materials: 0
+    service_equipment: DSV
+    frequency: 0
+  failures:
+  - scale: 400
+    shape: 1
+    time: 240
+    materials: 12500
+    service_equipment: AHV
+    operation_reduction: 1.0
+    level: 1
+    description: Major Repair
+  - scale: 480
+    shape: 1
+    time: 360
+    materials: 85333.3333
     service_equipment: AHV
     operation_reduction: 1
     replacement: true
@@ -344,18 +396,44 @@ anchor_shared1:
     service_equipment: DSV
     frequency: 0
   failures:
-  - scale: 71.04795738
+  - scale: 142.09591476
     shape: 1
     time: 240
-    materials: 25000
+    materials: 12500
     service_equipment: AHV
     operation_reduction: 1.0
     level: 1
     description: Major Repair
-  - scale: 85.2272727
+  - scale: 170.4545454
     shape: 1
     time: 360
-    materials: 170666.6667
+    materials: 85333.3333
+    service_equipment: AHV
+    operation_reduction: 1
+    replacement: true
+    level: 2
+    description: Replacement
+anchor_shared2:
+  name: Anchor
+  maintenance:
+  - description: Na
+    time: 0
+    materials: 0
+    service_equipment: DSV
+    frequency: 0
+  failures:
+  - scale: 142.09591476
+    shape: 1
+    time: 240
+    materials: 12500
+    service_equipment: AHV
+    operation_reduction: 1.0
+    level: 1
+    description: Major Repair
+  - scale: 170.4545454
+    shape: 1
+    time: 360
+    materials: 85333.3333
     service_equipment: AHV
     operation_reduction: 1
     replacement: true
@@ -370,26 +448,26 @@ mooring_line1:
     service_equipment: DSV
     frequency: 0
   failures:
-  - scale: 25
+  - scale: 50
     shape: 1
     time: 40
-    materials: 500
+    materials: 250
     service_equipment: CTV
     operation_reduction: 0
     level: 1
     description: Minor Repair
-  - scale: 200
+  - scale: 400
     shape: 1
     time: 240
-    materials: 6666.6667
+    materials: 3333.3333
     service_equipment: AHV
     operation_reduction: 1.0
     level: 2
     description: Major Repair
-  - scale: 240
+  - scale: 480
     shape: 1
     time: 360
-    materials: 45000
+    materials: 22500
     service_equipment: AHV
     operation_reduction: 1
     replacement: true
@@ -404,26 +482,26 @@ mooring_line2:
     service_equipment: DSV
     frequency: 0
   failures:
-  - scale: 25
+  - scale: 50
     shape: 1
     time: 40
-    materials: 500
+    materials: 250
     service_equipment: CTV
     operation_reduction: 0
     level: 1
     description: Minor Repair
-  - scale: 200
+  - scale: 400
     shape: 1
     time: 240
-    materials: 6666.6667
+    materials: 3333.3333
     service_equipment: AHV
     operation_reduction: 1.0
     level: 2
     description: Major Repair
-  - scale: 240
+  - scale: 480
     shape: 1
     time: 360
-    materials: 45000
+    materials: 22500
     service_equipment: AHV
     operation_reduction: 1
     replacement: true
@@ -438,26 +516,128 @@ mooring_line3:
     service_equipment: DSV
     frequency: 0
   failures:
-  - scale: 25
+  - scale: 50
     shape: 1
     time: 40
-    materials: 500
+    materials: 250
     service_equipment: CTV
     operation_reduction: 0
     level: 1
     description: Minor Repair
-  - scale: 200
+  - scale: 400
     shape: 1
     time: 240
-    materials: 6666.6667
+    materials: 3333.3333
     service_equipment: AHV
     operation_reduction: 1.0
     level: 2
     description: Major Repair
-  - scale: 240
+  - scale: 480
     shape: 1
     time: 360
-    materials: 45000
+    materials: 22500
+    service_equipment: AHV
+    operation_reduction: 1
+    replacement: true
+    level: 3
+    description: Replacement
+mooring_line4:
+  name: Mooring Line
+  maintenance:
+  - description: Na
+    time: 0
+    materials: 0
+    service_equipment: DSV
+    frequency: 0
+  failures:
+  - scale: 50
+    shape: 1
+    time: 40
+    materials: 250
+    service_equipment: CTV
+    operation_reduction: 0
+    level: 1
+    description: Minor Repair
+  - scale: 400
+    shape: 1
+    time: 240
+    materials: 3333.3333
+    service_equipment: AHV
+    operation_reduction: 1.0
+    level: 2
+    description: Major Repair
+  - scale: 480
+    shape: 1
+    time: 360
+    materials: 22500
+    service_equipment: AHV
+    operation_reduction: 1
+    replacement: true
+    level: 3
+    description: Replacement
+mooring_line5:
+  name: Mooring Line
+  maintenance:
+  - description: Na
+    time: 0
+    materials: 0
+    service_equipment: DSV
+    frequency: 0
+  failures:
+  - scale: 50
+    shape: 1
+    time: 40
+    materials: 250
+    service_equipment: CTV
+    operation_reduction: 0
+    level: 1
+    description: Minor Repair
+  - scale: 400
+    shape: 1
+    time: 240
+    materials: 3333.3333
+    service_equipment: AHV
+    operation_reduction: 1.0
+    level: 2
+    description: Major Repair
+  - scale: 480
+    shape: 1
+    time: 360
+    materials: 22500
+    service_equipment: AHV
+    operation_reduction: 1
+    replacement: true
+    level: 3
+    description: Replacement
+mooring_line6:
+  name: Mooring Line
+  maintenance:
+  - description: Na
+    time: 0
+    materials: 0
+    service_equipment: DSV
+    frequency: 0
+  failures:
+  - scale: 50
+    shape: 1
+    time: 40
+    materials: 250
+    service_equipment: CTV
+    operation_reduction: 0
+    level: 1
+    description: Minor Repair
+  - scale: 400
+    shape: 1
+    time: 240
+    materials: 3333.3333
+    service_equipment: AHV
+    operation_reduction: 1.0
+    level: 2
+    description: Major Repair
+  - scale: 480
+    shape: 1
+    time: 360
+    materials: 22500
     service_equipment: AHV
     operation_reduction: 1
     replacement: true
