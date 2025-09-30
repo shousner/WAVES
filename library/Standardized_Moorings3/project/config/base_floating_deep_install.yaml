@@ -1,0 +1,152 @@
+# floating deep base case
+site:
+  depth: 1026 # deep site
+  distance: 475 # deep site
+  distance_to_landfall: 90 # deep site
+  mean_windspeed: 8.41  # avg from weather profile in the Humboldt site
+plant:
+  layout: grid
+  num_turbines: 40
+  row_spacing: 8.33 
+  substation_distance: 2
+  turbine_spacing: 8.33 
+landfall:
+  interconnection_distance: 4 # deep site
+  trench_length: 6  # COE Review 2022
+turbine: 15MW_generic
+oss_design:
+  num_substations: 2
+port:
+  monthly_rate: 2498449
+  sub_assembly_lines: 1
+  turbine_assembly_cranes: 1
+  num_cranes : 1
+  sub_storage: 5
+  laydown_area: 40500 # 10 acres to m**2
+  assembly_start: 0.00
+  laydown_cost: 1
+
+# Vessels
+array_cable_install_vessel: example_cable_lay_vessel
+export_cable_install_vessel: example_cable_lay_vessel
+mooring_install_vessel: example_support_vessel
+oss_install_vessel: floating_heavy_lift_vessel
+#support_vessel: example_support_vessel
+towing_vessel: example_towing_vessel
+ahts_vessel: example_support_vessel
+towing_vessel_groups:
+  num_groups : 1 # note these numbers are different than the default for ORBIT- I believe ORCA assumes only one installation group of 3 vessels total for floating
+  station_keeping_vessels: 1
+  towing_vessels: 2
+
+substructure_delivery:
+  space_required: 3500
+turbine_delivery:
+  space_required: 1838
+
+# Module Specific
+substructure:
+  takt_time: 336
+  ahts_vessel: example_support_vessel
+OffshoreSubstationInstallation:
+  feeder: floating_barge
+array_system_design:
+  free_cable_length: 0
+  floating_cable_depth: 200
+  cables:
+  - XLPE_185mm_66kV_dynamic
+  - XLPE_630mm_66kV_dynamic
+  - XLPE_1000mm_220kV_dynamic
+  location_data: base_floating_deep_layout_standmoor
+#ArrayCableInstallation:
+  #array_system:
+    #system_cost: 151138771
+export_system_design:
+  cables: XLPE_1000m_220kV
+  percent_added_length: 0.0
+
+# For Supply Chain Transportation
+transport_vessel:
+  transport_specs:
+    max_waveheight: 3       # m
+    max_windspeed: 25       # m/s
+    transit_speed: 10       # km/h
+  vessel_specs:
+    day_rate: 30000        # USD/day
+    overall_length: 150     # m
+    mobilization_days: 7    # days
+    mobilization_mult: 0   # Mobilization multiplier applied to 'day_rate'
+  storage_specs:
+    max_cargo: 2000          # t
+    max_deck_load: 8          # t/m^2
+    max_deck_space: 1000      # m^2
+    capacity: 6           # units
+transport_railcar:
+  transport_specs:
+    max_waveheight: 100       # m
+    max_windspeed: 100       # m/s
+    transit_speed: 10       # km/h
+  vessel_specs:
+    day_rate: 2001        # USD/day
+    overall_length: 150     # m 10 x 15m
+    mobilization_days: 7    # days
+    mobilization_mult: 1   # Mobilization multiplier applied to 'day_rate'
+  storage_specs:
+    max_cargo: 600          # 50 ft gondala railcar can take 60 t (132,277 lb) of chain - 10 railcars per train - assume chain can lay across railcars
+    max_deck_load: 8          # t/m^2
+    max_deck_space: 37      # m^2
+    capacity: 20    # 2 ropes per railcar - 10 railcars per train
+
+# Inputs for CustomMooringSystemDesign
+custom_filename: C:\\Code\\FloatingArrayDesign\\FADesign\\scripts\\standmoor\\orbit\\inputs\\baseline_morrobay.csv
+
+# Inputs for MooringSystemSupplyChain
+chain_supply:
+  #laydown_area: 200 # m**2
+  takt_time: 0.186 # hours per m (47,000 m/year @ 35-40% capacity)
+  assembly_lines: 1 #
+  space_required: 7.5 # m**2 pile of 90m chain
+  transit_time: 168 # (168 hours = 1 week) hours
+  reset_trigger: 0.00599 # m (1/4" per Delmar)
+  reset_time: 168   # h (1 week per Delmar)
+rope_supply:
+  #laydown_area: 200 # m**2
+  #takt_time: 0.187 # hours per m (46,800 m/year)
+  takt_time: 87.6 # hours per rope (per 2 splices)
+  assembly_lines: 1 #
+  space_required: 6.75 # m**2 spool for 450m
+  transit_time: 168 # (168 hours = 1 week) hours
+  reset_trigger: 0.0254 # m (1 in)
+  reset_time: 0.5   # h
+anchor_supply:
+  #laydown_area: 800 # m**2
+  takt_time: 182.5 # hr (48 units per year) - keep it the same regardless of the number of assembly lines
+  assembly_lines: 2 #
+  space_required: 300 # m**2
+  transit_time: 336
+  reset_trigger: 0.199 # m rouding to 1/4 meter
+  reset_time: 168   # h (1 week per Delmar)
+
+# Configured Phases
+design_phases:
+- CustomMooringSystemDesign
+- CustomArraySystemDesign
+- ElectricalDesign        # (includes OffshoreSubstation, Export Cables)
+- SemiSubmersibleDesign
+install_phases:
+  MooringSystemSupplyChain: 0
+  MooringSystemInstallation: 0
+  ArrayCableInstallation: 0
+  ExportCableInstallation: 0
+  MooredSubInstallation: 0    # (includes TurbineInstall)
+  OffshoreSubstationInstallation: 0
+
+project_parameters:
+  turbine_capex: 1770  # new assumed turbine price COE Review 2023
+  interest_during_construction: 0.073
+  decommissioning_factor: 0.2
+  construction_insurance_factor: 0.023
+  site_auction_price: 162290000 # average of CA auction sales in 2022 USD is 151.42 -> 2024 USD 162.29
+  site_assessment_cost: 63000000   # modified so that total Project Development without lease area is 350m
+  construction_plan_cost: 87000000 # modified so that total Project Development without lease area is 350m
+  installation_plan_cost: 200000000 # modified so that total Project Development without lease area is 350m

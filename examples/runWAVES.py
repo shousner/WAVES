@@ -645,7 +645,8 @@ def plot_LCOE_waterfall(technology, df, width=8, height=6, y_min=None, y_max=Non
     ax.spines['top'].set_visible(False)
     ax.spines['right'].set_visible(False)
     plt.tight_layout()
-    fig.savefig("C:\\Code\\WAVES\\library\\Standardized_Moorings\\results\\LCOE_waterfall.png", bbox_inches='tight')
+    #fig.savefig("C:\\Code\\WAVES\\library\\Standardized_Moorings\\results\\LCOE_waterfall.png", bbox_inches='tight')
+    fig.savefig("C:\\Code\\WAVES\\library\\Standardized_Moorings3\\results\\LCOE_waterfall.png", bbox_inches='tight')
     plt.show()
 
 
@@ -739,18 +740,25 @@ def create_waterfall_chart(df_1, total_1, df_2, total_2, color_2):
 
     
     fig.tight_layout()
-    fig.savefig("C:\\Code\\WAVES\\library\\Standardized_Moorings\\results\\comparison_waterfall.png", bbox_inches='tight')
+    #fig.savefig("C:\\Code\\WAVES\\library\\Standardized_Moorings\\results\\comparison_waterfall.png", bbox_inches='tight')
+    fig.savefig("C:\\Code\\WAVES\\library\\Standardized_Moorings3\\results\\comparison_waterfall.png", bbox_inches='tight')
 
     plt.show()
 
 
 
+# Standardized_Moorings = Humboldt Baseline
+# Standardized_Moorings2 = Humboldt Standardized
+# Standardized_Moorings3 = Morro Bay Baseline
+# Standardized_Moorings4 = Morro Bay Standardized
+
+'''
 project_floating1 = runRunWAVES(10, Path("library/Standardized_Moorings/"))
 project_floating2 = runRunWAVES(10, Path("library/Standardized_Moorings2/"))
 '''
 project_floating1 = runRunWAVES(10, Path("library/Standardized_Moorings3/"))
 project_floating2 = runRunWAVES(10, Path("library/Standardized_Moorings4/"))
-'''
+
 
 #df1 = project_floating1.generate_report_lcoe_breakdown()
 #df2 = project_floating2.generate_report_lcoe_breakdown()
