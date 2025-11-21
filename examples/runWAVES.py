@@ -624,7 +624,7 @@ def plot_LCOE_waterfall(technology, df, width=8, height=6, y_min=None, y_max=Non
     # Setting labels and title
     ax.set_xticks(bar_positions)
     ax.set_xticklabels(bar_labels, rotation=45, ha='right')
-    ax.set_ylabel('Levelized Cost of Energy (2023$/MWh)')
+    ax.set_ylabel('Levelized Cost of Energy (real, 2024$/MWh)')
     
     # Equal aspect ratio ensures that pie is drawn as a circle.
     if "DW" in technology:
@@ -715,7 +715,7 @@ def create_waterfall_chart(df_1, total_1, df_2, total_2, color_2):
     
     for i in range(len(heights)):
         ax.bar(labels[i], heights[i], bottom=white_bar_heights[i], color=colors[i], alpha=alphas[i])#, edgecolor='black', zorder = 50)
-    ax.set_ylabel('LCOE ($/MWh)')
+    ax.set_ylabel('LCOE (real, 2024$/MWh)')
     #plt.title('Waterfall Chart Comparison between df_1 and df_2')
     #ax.set_xticks(labels)
 
@@ -744,7 +744,7 @@ def create_waterfall_chart(df_1, total_1, df_2, total_2, color_2):
     
     fig.tight_layout()
     #fig.savefig("C:\\Code\\WAVES\\library\\Standardized_Moorings\\results\\comparison_waterfall.png", bbox_inches='tight')
-    fig.savefig("C:\\Code\\WAVES\\library\\Standardized_Moorings3\\results\\comparison_waterfall.png", bbox_inches='tight')
+    #fig.savefig("C:\\Code\\WAVES\\library\\Standardized_Moorings3\\results\\comparison_waterfall.png", bbox_inches='tight')
 
     plt.show()
 

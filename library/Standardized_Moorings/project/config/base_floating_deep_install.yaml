@@ -127,6 +127,9 @@ anchor_supply:
   reset_trigger: 0.199 # m rouding to 1/4 meter
   reset_time: 168   # h (1 week per Delmar)
 
+substation_design:
+  oss_substructure_type: Floating
+
 # Configured Phases
 design_phases:
 - CustomMooringSystemDesign
@@ -140,6 +143,7 @@ install_phases:
   ExportCableInstallation: 0
   MooredSubInstallation: 0    # (includes TurbineInstall)
   OffshoreSubstationInstallation: 0
+  #FloatingSubstationInstallation: 0
 
 project_parameters:
   turbine_capex: 1770  # new assumed turbine price COE Review 2023
