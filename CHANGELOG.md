@@ -10,6 +10,10 @@
 - A pre-commit workflow is added to be run against PRs into the main and develop branches to ensure
   code quality checks are passed.
 
+## v0.6.2 - 1 December 2025
+
+- Pins `jupyter-book` to "<2" to avoid v2 migration issues prior to testing.
+
 ## v0.6.1 - 17 October 2025
 
 - Replaces the use of WOMBAT's weather profile for the internal `Project.weather` for
