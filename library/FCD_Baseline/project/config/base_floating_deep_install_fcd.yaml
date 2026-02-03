@@ -47,9 +47,9 @@ array_system_design:
   - XLPE_630mm_66kV_dynamic
   - XLPE_1000mm_220kV_dynamic
   location_data: base_floating_intermediate_layout_fcd_baseline
-ArrayCableInstallation:  # [UPDATE with actual numbers from Leah/Ericka]
+ArrayCableInstallation:
   array_system:
-    system_cost: 232000830
+    system_cost: 232000830  # procurement cost from FAModel object
 export_system_design:
   cables: XLPE_1000m_220kV
   percent_added_length: 0.0

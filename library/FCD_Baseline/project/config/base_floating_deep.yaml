@@ -1,9 +1,9 @@
 turbine_type: "floating"
 # Primary model configurations
-orbit_config: base_floating_deep_install.yaml
+orbit_config: base_floating_deep_install_fcd.yaml
 wombat_config: base_floating_deep_operations.yaml
 floris_config: base_floating_deep_floris_jensen.yaml
-weather_profile: era5_41.0N_125.0W_1989_2019.csv
+weather_profile: gulf_of_maine_43.5_-69.0.csv
 turbine_type: floating
 
 # Shared input connections
