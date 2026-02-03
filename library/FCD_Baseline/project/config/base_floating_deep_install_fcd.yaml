@@ -1,0 +1,101 @@
+# floating moderate base case (FCD)
+site:
+  depth: 200
+  distance: 148
+  distance_to_landfall: 83
+  mean_windspeed: 8.41
+plant:
+  layout: grid
+  num_turbines: 132
+  row_spacing: 6.63 
+  substation_distance: 1
+  turbine_spacing: 7.09 
+landfall:
+  interconnection_distance: 4
+  trench_length: 6
+turbine: 15MW_generic
+port:
+  monthly_rate: 2498449
+  sub_assembly_lines: 1
+  turbine_assembly_cranes: 1
+  num_cranes : 1
+  sub_storage: 5
+
+
+# Vessels
+array_cable_install_vessel: example_cable_lay_vessel
+export_cable_install_vessel: example_cable_lay_vessel
+mooring_install_vessel: example_support_vessel
+oss_install_vessel: floating_heavy_lift_vessel
+support_vessel: example_support_vessel
+towing_vessel: example_towing_vessel
+ahts_vessel: example_support_vessel
+towing_vessel_groups:
+  num_groups : 1 # note these numbers are different than the default for ORBIT- I believe ORCA assumes only one installation group of 3 vessels total for floating
+  station_keeping_vessels: 1
+  towing_vessels: 2
+
+# Module Specific
+substructure:
+  takt_time: 336
+  ahts_vessel: example_support_vessel
+array_system_design:
+  free_cable_length: 0.5
+  #floating_cable_depth: 200  # defaults to water depth
+  cables:
+  - XLPE_185mm_66kV_dynamic   # [actual design uses 300 mm^2]
+  - XLPE_630mm_66kV_dynamic
+  - XLPE_1000mm_220kV_dynamic
+  location_data: base_floating_intermediate_layout_fcd_baseline
+ArrayCableInstallation:  # [UPDATE with actual numbers from Leah/Ericka]
+  array_system:
+    system_cost: 232000830
+export_system_design:
+  cables: XLPE_1000m_220kV
+  percent_added_length: 0.0
+
+#mooring_system_design:
+#  num_lines: 3
+#  line_mass: 210      # [t per mooring line]
+#  line_cost: 550000   # [USD per mooring line]
+#  anchor_mass: 1      # [t per anchor]
+#  anchor_cost: 10     # [USD per anchor]
+#  anchor_type: Drag Embedment
+#  installation_method: standard
+
+# Inputs for CustomMooringSystemDesign
+custom_filename: C:\\Code\\FloatingArrayDesign\\FADesign\\scripts\\fishing_co-design\\gulfofmaine_baseline_custom_mooring_system.csv
+
+process_times:
+  anchor_load_time: 1.5             # Anchor loading onto vessel
+  mooring_line_load_time: 4         # Mooring line loading onto vessel
+
+substation_design:
+  oss_substructure_type: Floating
+  num_substations: 2
+
+
+
+# Configured Phases
+design_phases:
+#- MooringSystemDesign
+- CustomMooringSystemDesign
+- CustomArraySystemDesign
+- ElectricalDesign        # (includes OffshoreSubstation, Export Cables)
+- SemiSubmersibleDesign
+install_phases:
+  MooringSystemInstallation: 0
+  ArrayCableInstallation: 0
+  ExportCableInstallation: 0
+  MooredSubInstallation: 0    # (includes TurbineInstall)
+  FloatingSubstationInstallation: 0
+
+project_parameters:
+  turbine_capex: 1770  # new assumed turbine price COE Review 2023
+  interest_during_construction: 0.073
+  decommissioning_factor: 0.2
+  construction_insurance_factor: 0.023
+  site_auction_price: 10975000 # average of Gulf of Maine auction sales in 2024 USD is 10.975
+  site_assessment_cost: 63000000   # modified so that total Project Development without lease area is 350m
+  construction_plan_cost: 87000000 # modified so that total Project Development without lease area is 350m
+  installation_plan_cost: 200000000 # modified so that total Project Development without lease area is 350m
