@@ -1,0 +1,197 @@
+description: Standardized Moorings Layout using Jensen-Jimenez
+farm:
+  layout_x:
+  - -5861.010688
+  - -5861.010688
+  - -5861.010688
+  - -3861.010688
+  - -3861.010688
+  - -3861.010688
+  - -3861.010688
+  - -3861.010688
+  - -1861.010688
+  - -1861.010688
+  - -1861.010688
+  - -1861.010688
+  - -1861.010688
+  - -1861.010688
+  - -1861.010688
+  - -1861.010688
+  - 138.989312
+  - 138.989312
+  - 138.989312
+  - 138.989312
+  - 138.989312
+  - 138.989312
+  - 138.989312
+  - 138.989312
+  - 138.989312
+  - 138.989312
+  - 138.989312
+  - 2138.989312
+  - 2138.989312
+  - 2138.989312
+  - 2138.989312
+  - 2138.989312
+  - 2138.989312
+  - 2138.989312
+  - 2138.989312
+  - 2138.989312
+  - 4138.989312
+  - 4138.989312
+  - 4138.989312
+  - 4138.989312
+
+  layout_y:
+  - 10645.90039
+  - 8645.900392
+  - 6645.900392
+  - 10645.90039
+  - 8645.900392
+  - 6645.900392
+  - 4645.900392
+  - 2645.900392
+  - 12645.90039
+  - 10645.90039
+  - 8645.900392
+  - 6645.900392
+  - 4645.900392
+  - 2645.900392
+  - 645.9003924
+  - -1354.099608
+  - 14645.90039
+  - 12645.90039
+  - 10645.90039
+  - 8645.900392
+  - 6645.900392
+  - 4645.900392
+  - 2645.900392
+  - 645.9003924
+  - -1354.099608
+  - -3354.099608
+  - -5354.099608
+  - 2645.900392
+  - 645.9003924
+  - -1354.099608
+  - -3354.099608
+  - -5354.099608
+  - -7354.099608
+  - -9354.099608
+  - -11354.09961
+  - -13354.09961
+  - -7354.099608
+  - -9354.099608
+  - -11354.09961
+  - -13354.09961
+
+  turbine_library_path: ../../turbines
+  turbine_type:
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+  - iea_15MW_240m
+floris_version: v3.0.0
+flow_field:
+  air_density: 1.225
+  reference_wind_height: -1
+  wind_directions:
+  - 270.0
+  wind_shear: 0.12
+  wind_speeds:
+  - 8.41
+  wind_veer: 0.0
+  turbulence_intensities:
+  - 0.06
+logging:
+  console:
+    enable: true
+    level: WARNING
+  file:
+    enable: false
+    level: WARNING
+name: Deep FAD Layout Jensen
+solver:
+  turbine_grid_points: 3
+  type: turbine_grid
+wake:
+  enable_secondary_steering: true
+  enable_transverse_velocities: true
+  enable_yaw_added_recovery: true
+  model_strings:
+    combination_model: sosfs
+    deflection_model: jimenez
+    turbulence_model: crespo_hernandez
+    velocity_model: jensen
+  wake_deflection_parameters:
+    gauss:
+      ad: 0.0
+      alpha: 0.58
+      bd: 0.0
+      beta: 0.077
+      dm: 1.0
+      ka: 0.38
+      kb: 0.004
+    jimenez:
+      ad: 0.0
+      bd: 0.0
+      kd: 0.05
+  wake_turbulence_parameters:
+    crespo_hernandez:
+      ai: 0.8
+      constant: 0.5
+      downstream: -0.32
+      initial: 0.1
+  wake_velocity_parameters:
+    cc:
+      a_f: 3.11
+      a_s: 0.179367259
+      alpha_mod: 1.0
+      b_f: -0.68
+      b_s: 0.0118889215
+      c_f: 2.41
+      c_s1: 0.0563691592
+      c_s2: 0.13290157
+    gauss:
+      alpha: 0.58
+      beta: 0.077
+      ka: 0.38
+      kb: 0.004
+    jensen:
+      we: 0.05
+  enable_active_wake_mixing: false
