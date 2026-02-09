@@ -319,6 +319,8 @@ def runRunWAVES(NUM_RUNS, library_path):
         losses_dfs.append(report_df_losses) 
 
     return project_floating
+
+
 '''
 # === Compute and save averages ===
 __location__ = "C:\\Code\\WAVES\\examples\\standmoor-results\\"
@@ -333,7 +335,142 @@ average_and_save(report_dfs, __location__+"deep_average_report_df.csv", index_co
 average_and_save(losses_dfs, __location__+"deep_average_losses_report_df.csv")
 '''
 
-a = 2
+
+
+def generate_report_lcoe_breakdown(project) -> pd.DataFrame:
+    """Generates a dataframe containing the detailed breakdown of LCOE (Levelized Cost of
+    Energy) metrics for the project, which is used to produce LCOE waterfall charts and
+    CapEx donut charts in the Cost of Wind Energy Review. The breakdown includes the
+    contributions of each CapEx and OpEx component (from ORBIT and WOMBAT) to the LCOE in
+    $/MWh.
+
+    This function calculates the LCOE by considering both CapEx (from ORBIT) and OpEx (from
+    WOMBAT),and incorporates the fixed charge rate (FCR) and net annual energy production
+    (net AEP) into the computation for each component.
+
+    Returns
+    -------
+    pd.DataFrame
+        A DataFrame containing the detailed LCOE breakdown with the following columns:
+            - "Component": The name of the project component (e.g., "Turbine", "Balance
+                of System CapEx", "OpEx").
+            - "Category": The category of the component (e.g., "Turbine", "Balance of System
+                CapEx", "Financial CapEx", "OpEx").
+            - "Value ($/kW)": The value of the component in $/kW.
+            - "Fixed charge rate (FCR) (real)": The real fixed charge rate (FCR) applied to the
+                component.
+            - "Value ($/kW-yr)": The value of the component in $/kW-yr, after applying the FCR.
+            - "Net AEP (MWh/kW/yr)": The net annual energy production (AEP) in MWh/kW/yr.
+            - "Value ($/MWh)": The value of the component in $/MWh, calculated by dividing the
+                $/kW-yr value by the net AEP.
+
+    Notes
+    -----
+    - CapEx components are categorized into "Turbine", "Balance of System CapEx", and "Financial
+        CapEx".
+    - OpEx components are derived from WOMBAT's OpEx metrics, categorized as "OpEx".
+    - The LCOE is calculated by considering both CapEx and OpEx components, and adjusting for
+        net AEP and FCR.
+    - Rows with a value of 0 in the "Value ($/MWh)" column are removed to avoid clutter in
+        annual reporting charts.
+    """
+    # Static values
+    fcr = project.fixed_charge_rate
+    net_aep = project.energy_production(units="mw", per_capacity="kw", aep=True)
+
+    # Handle CapEx outputs from ORBIT
+    try:
+        capex_data = project.orbit.capex_detailed_soft_capex_breakdown_per_kw
+    except AttributeError:
+        capex_data = project.orbit.capex_breakdown_per_kw
+
+    turbine_components = ("Turbine", "Nacelle", "Blades", "Tower", "RNA")
+    financial_components = (
+        "Construction",
+        "Decommissioning",
+        "Financing",
+        "Contingency",
+        "Soft",
+    )
+    columns = [
+        "Component",
+        "Category",
+        "Value ($/kW)",
+        "Fixed charge rate (FCR) (real)",
+        "Value ($/kW-yr)",
+        "Net AEP (MWh/kW/yr)",
+        "Value ($/MWh)",
+    ]
+
+    df = pd.DataFrame.from_dict(capex_data, orient="index", columns=["Value ($/kW)"])
+    df["Category"] = "BOS"
+    df.loc[df.index.isin(turbine_components), "Category"] = "Turbine"
+    df.loc[df.index.isin(financial_components), "Category"] = "Financial CapEx"
+    df.Category = df.Category.str.replace("BOS", "Balance of System CapEx")
+
+    df["Fixed charge rate (FCR) (real)"] = fcr
+    df["Value ($/kW-yr)"] = df["Value ($/kW)"] * fcr
+    df["Value ($/MWh)"] = df["Value ($/kW-yr)"] / net_aep
+    df["Net AEP (MWh/kW/yr)"] = net_aep
+    df = df.reset_index(drop=False)
+    df = df.rename(columns={"index": "Component"})
+
+    # Handle OpEx outputs from WOMBAT
+    opex = (
+        project.wombat.metrics.opex(frequency="annual", by_category=True)
+        .mean(axis=0)
+        .to_frame("Value ($/kW-yr)")
+        .join(
+            project.wombat.metrics.opex(frequency="annual", by_category=True)
+            .sum(axis=0)
+            .to_frame("Value ($/kW)")
+        )
+        .drop("OpEx")
+    )
+    opex /= project.capacity("kw")
+    opex.index = opex.index.str.replace("_", " ").str.title()
+    opex.index.name = "Component"
+    opex["Category"] = "OpEx"
+    opex["Fixed charge rate (FCR) (real)"] = fcr
+    opex["Net AEP (MWh/kW/yr)"] = net_aep
+    opex["Value ($/MWh)"] = opex["Value ($/kW-yr)"] / net_aep
+    opex = opex.reset_index(drop=False)[columns]
+
+    # Concatenate CapEx and OpEx rows
+    df = pd.concat((df, opex)).reset_index(drop=True).reset_index(names=["Original Order"])
+
+    # Define the desired order of categories for sorting
+    order_of_categories = ["Turbine", "Balance of System CapEx", "Financial CapEx", "OpEx"]
+
+    # Sort the dataframe based on the custom category order
+    df["Category"] = pd.Categorical(
+        df["Category"], categories=order_of_categories, ordered=True
+    )
+    df = (
+        df.sort_values(by=["Category", "Original Order"])
+        .drop(columns=["Original Order"])
+        .reset_index(drop=True)
+    )
+
+    # Remove rows where 'Value ($/MWh)' is zero to avoid 0 values on annual reporting charts
+    df = df[df["Value ($/MWh)"] != 0]
+
+    # Re-order the columns so that it is more intuitive for the analyst
+    df = df[
+        [
+            "Component",
+            "Category",
+            "Value ($/kW)",
+            "Fixed charge rate (FCR) (real)",
+            "Value ($/kW-yr)",
+            "Net AEP (MWh/kW/yr)",
+            "Value ($/MWh)",
+        ]
+    ]
+
+    # Reset index and return the dataframe
+    df = df.reset_index(drop=True)
+    return df
 
 
 
@@ -758,17 +895,20 @@ def create_waterfall_chart(df_1, total_1, df_2, total_2, color_2):
 '''
 project_floating1 = runRunWAVES(10, Path("library/Standardized_Moorings/"))
 project_floating2 = runRunWAVES(10, Path("library/Standardized_Moorings2/"))
-'''
+
 project_floating1 = runRunWAVES(10, Path("library/Standardized_Moorings3/"))
 project_floating2 = runRunWAVES(10, Path("library/Standardized_Moorings4/"))
+'''
 
+project_floating_fcd = runRunWAVES(1, Path("library/FCD_Baseline/"))
 
 #df1 = project_floating1.generate_report_lcoe_breakdown()
 #df2 = project_floating2.generate_report_lcoe_breakdown()
-df1 = generate_report_lcoe_breakdown_adjusted(project_floating1)
-df2 = generate_report_lcoe_breakdown_adjusted(project_floating2)
+#df1 = generate_report_lcoe_breakdown_adjusted(project_floating1)
+#df2 = generate_report_lcoe_breakdown_adjusted(project_floating2)
+df3 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd)
 
-plot_LCOE_waterfall('test', df1)
+plot_LCOE_waterfall('test', df3)
 '''
 df2 = df1.copy()
 df2.loc[df2["Component"]=="Mooring System Installation", "Value ($/MWh)"] *= 2

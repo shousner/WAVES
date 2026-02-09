@@ -7,7 +7,7 @@ weather_profile: gulf_of_maine_43.5_-69.0.csv
 turbine_type: floating
 
 # Shared input connections
-orbit_start_date: 1/1/1998
+orbit_start_date: 1/1/2000
 orbit_weather_cols:
 - windspeed_100m
 - windspeed_10m
@@ -23,7 +23,7 @@ connect_floris_to_layout: true
 conenct_orbit_array_design: true
 
 # High-level project financials
-fixed_charge_rate: 0.0648 # real FCR from national LCOE study, 25 year lifetime instead of 30
+fixed_charge_rate: 0.0676 # FCR from COWER 2024 edition
 discount_rate: 0.025
 loss_ratio: 0.1
 offtake_price: 83.30

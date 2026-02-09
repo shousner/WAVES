@@ -14,6 +14,8 @@ landfall:
   interconnection_distance: 4
   trench_length: 6
 turbine: 15MW_generic
+oss_design:
+  num_substations: 2
 port:
   monthly_rate: 2498449
   sub_assembly_lines: 1
@@ -91,11 +93,11 @@ install_phases:
   FloatingSubstationInstallation: 0
 
 project_parameters:
-  turbine_capex: 1770  # new assumed turbine price COE Review 2023
-  interest_during_construction: 0.073
-  decommissioning_factor: 0.2
-  construction_insurance_factor: 0.023
-  site_auction_price: 10975000 # average of Gulf of Maine auction sales in 2024 USD is 10.975
-  site_assessment_cost: 63000000   # modified so that total Project Development without lease area is 350m
-  construction_plan_cost: 87000000 # modified so that total Project Development without lease area is 350m
-  installation_plan_cost: 200000000 # modified so that total Project Development without lease area is 350m
+  turbine_capex: 1770                   # new assumed turbine price COE Review 2023 (and 2024)
+  interest_during_construction: 0.065   # interest rate to factor into the construction financing
+  decommissioning_factor: 0.2           # % of installation capex to calculate decomissioning
+  construction_insurance_factor: 0.0207 # % of (turbine+bos+project capex) to calculate construction insurance
+  site_auction_price: 10975000          # average of Gulf of Maine auction sales in 2024 USD is 10.975
+  site_assessment_cost: 63000000        # modified so that total Project Development without lease area is 350m
+  construction_plan_cost: 87000000      # modified so that total Project Development without lease area is 350m
+  installation_plan_cost: 200000000     # modified so that total Project Development without lease area is 350m
