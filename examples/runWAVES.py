@@ -900,21 +900,39 @@ project_floating1 = runRunWAVES(10, Path("library/Standardized_Moorings3/"))
 project_floating2 = runRunWAVES(10, Path("library/Standardized_Moorings4/"))
 '''
 
-project_floating_fcd = runRunWAVES(1, Path("library/FCD_Baseline/"))
+#project_floating_fcd_gulfofmaine_baseline = runRunWAVES(10, Path("library/FCD_Baseline/"))
+project_floating_fcd_gulfofmaine_interrow = runRunWAVES(10, Path("library/FCD_Interrow/"))
+#project_floating_fcd_midatlantic_baseline = runRunWAVES(1, Path("library/FCD_MidAtlantic_Baseline/"))
+#project_floating_fcd_midatlantic_interrow = runRunWAVES(1, Path("library/FCD_MidAtlanticInterrow/"))
 
 #df1 = project_floating1.generate_report_lcoe_breakdown()
 #df2 = project_floating2.generate_report_lcoe_breakdown()
 #df1 = generate_report_lcoe_breakdown_adjusted(project_floating1)
 #df2 = generate_report_lcoe_breakdown_adjusted(project_floating2)
-df3 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd)
 
-plot_LCOE_waterfall('test', df3)
+#df3 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd_gulfofmaine_baseline)
+df4 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd_gulfofmaine_interrow)
+
+#df5 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd_midatlantic_baseline)
+#df6 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd_midatlantic_interrow)
+
+#plot_LCOE_waterfall('test', df3)
+plot_LCOE_waterfall('test', df4)
+#plot_LCOE_waterfall('test', df5)
+#plot_LCOE_waterfall('test', df6)
+
+
+#create_waterfall_chart(df1, 'Baseline', df2, 'Standardized', 'lightskyblue')
+create_waterfall_chart(df3, 'Baseline', df4, 'Fishing-Informed', 'lightskyblue')
+#create_waterfall_chart(df5, 'Baseline', df6, 'Fishing-Informed', 'lightskyblue')
+
+
 '''
 df2 = df1.copy()
 df2.loc[df2["Component"]=="Mooring System Installation", "Value ($/MWh)"] *= 2
 df2.loc[df2["Component"]=="Array System Installation", "Value ($/MWh)"] /= 2
 '''
-create_waterfall_chart(df1, 'Baseline', df2, 'Standardized', 'lightskyblue')
+
 
 
 

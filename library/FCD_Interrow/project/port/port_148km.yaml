@@ -1,0 +1,14 @@
+name: Sears Island Port
+tugboats: [tugboat1.yaml, tugboat2.yaml]
+max_operations: 2
+workday_start: 6
+workday_end: 18
+site_distance: 148
+crew:
+  day_rate: 0  # 80K/yr annual salary for 30 workers added as a fixed cost
+  n_day_rate: 0  # Most tasks are 3 or 4, but some larger ones are 8, 10, and 21 (number of salaried workers)
+  hourly_rate: 0
+  n_hourly_rate: 0
+n_crews: 2
+annual_fee: 30.392e6
+#daily_use_fee: 83266 # Calculated based on monthly port fee in 2024 USD from ORBIT [2.498e6](more appropiate for TTP operations given that additional berth space and heavy-lift capacity would be required compared to a fixed-bottom port with just some space for CTVs) divided by 30 days in a month
