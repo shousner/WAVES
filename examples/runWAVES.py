@@ -902,8 +902,8 @@ project_floating2 = runRunWAVES(10, Path("library/Standardized_Moorings4/"))
 
 #project_floating_fcd_gulfofmaine_baseline = runRunWAVES(10, Path("library/FCD_Baseline/"))
 #project_floating_fcd_gulfofmaine_interrow = runRunWAVES(10, Path("library/FCD_Interrow/"))
-project_floating_fcd_midatlantic_baseline = runRunWAVES(1, Path("library/FCD_MidAtlantic_Baseline/"))
-#project_floating_fcd_midatlantic_interrow = runRunWAVES(1, Path("library/FCD_MidAtlanticInterrow/"))
+#project_floating_fcd_midatlantic_baseline = runRunWAVES(1, Path("library/FCD_MidAtlantic_Baseline/"))
+project_floating_fcd_midatlantic_interrow = runRunWAVES(1, Path("library/FCD_MidAtlantic_Interrow/"))
 
 #df1 = project_floating1.generate_report_lcoe_breakdown()
 #df2 = project_floating2.generate_report_lcoe_breakdown()
@@ -913,13 +913,13 @@ project_floating_fcd_midatlantic_baseline = runRunWAVES(1, Path("library/FCD_Mid
 #df3 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd_gulfofmaine_baseline)
 #df4 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd_gulfofmaine_interrow)
 
-df5 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd_midatlantic_baseline)
-#df6 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd_midatlantic_interrow)
+#df5 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd_midatlantic_baseline)
+df6 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd_midatlantic_interrow)
 
 #plot_LCOE_waterfall('test', df3)
 #plot_LCOE_waterfall('test', df4)
-plot_LCOE_waterfall('test', df5)
-#plot_LCOE_waterfall('test', df6)
+#plot_LCOE_waterfall('test', df5)
+plot_LCOE_waterfall('test', df6)
 
 
 #create_waterfall_chart(df1, 'Baseline', df2, 'Standardized', 'lightskyblue')
