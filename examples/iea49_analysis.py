@@ -43,14 +43,6 @@ metrics_configuration = {
         "metric": "availability",
         "kwargs": {"which": "energy"},
     },
-    "Revenue": {
-        "metric": "revenue",
-        "kwargs": {"loss": False},
-    },
-    "Downtime_Loss": {
-        "metric": "revenue",
-        "kwargs": {"loss": True},
-    },
     "OM_Total": {
         "metric": "opex",
         "kwargs": {"frequency": "project"},
@@ -265,20 +257,24 @@ def calculate_monthly_work_orders(seed: int, project: Project) -> pd.DataFrame:
         complete_repairs.join(complete_maintenance).reindex_like(base_df).fillna(0).astype(int)
     )
     total = requests.cumsum() - canceled.cumsum() - complete.cumsum()
+    total.insert(0, "NumberOfWO", total.sum(axis=1))
+    requests.insert(0, "NumberOfSubmittedWO", requests.sum(axis=1))
+    canceled.insert(0, "NumberOfCanceledWO", canceled.sum(axis=1))
+    complete.insert(0, "NumberOfCompletedWO", complete.sum(axis=1))
     work_orders = (
         total.rename(columns={c: f"NumberOfWO_{c.replace(' ', '')}" for c in total_order})
         .join(
-            requests.rename(
+            requests.cumsum().rename(
                 columns={c: f"NumberOfSubmittedWO_{c.replace(' ', '')}" for c in total_order}
             )
         )
         .join(
-            canceled.rename(
+            canceled.cumsum().rename(
                 columns={c: f"NumberOfCanceledWO_{c.replace(' ', '')}" for c in total_order}
             )
         )
         .join(
-            complete.rename(
+            complete.cumsum().rename(
                 columns={c: f"NumberOfCompletedWO_{c.replace(' ', '')}" for c in total_order}
             )
         )
@@ -311,6 +307,12 @@ def gather_project_results(seed: int, project: Project) -> pd.DataFrame:
     vessel_costs = metrics.equipment_costs(
         frequency="project", by_equipment=True
     )  # TODO: This value is far too high, is there double/triple counting?
+
+    # Availability-only revenue and downtime losses
+    potential = project.wombat.metrics.potential.windfarm.values.sum() / 1000
+    production = project.wombat.metrics.production.windfarm.values.sum() / 1000
+    results["Revenue"] = production * project.offtake_price
+    results["Downtime_Loss"] = (potential - production) * project.offtake_price
 
     # Fixed cost breakdown
     base_cols = ["operations_management_administration", "operating_facilities"]
@@ -388,7 +390,6 @@ def gather_project_results(seed: int, project: Project) -> pd.DataFrame:
     charter_period = mobilization_summary[["Average Charter Days"]].T.rename(
         {"Average Charter Days": seed}
     )[[v for v in vessels if v in mobilization_summary.index]]
-    charter_period = mobilizations
 
     mobilizations.columns = [f"NumMob_{col.replace(' ', '')}" for col in mobilizations.columns]
     charter_period.columns = [
@@ -456,7 +457,7 @@ def gather_timeline_results(seed: int, project: Project) -> pd.DataFrame:
 
 
 if __name__ == "__main__":
-    N = 2
+    N = 20
     scenarios = [
         "base",
     ]
@@ -509,7 +510,6 @@ if __name__ == "__main__":
                     project, timing = run_analysis(
                         seed, rng, config, config_wombat, project=project
                     )
-                    print(f"{scenario:>30}, {seed:>2} run time: {timing:3.1f} seconds", flush=True)
                     scenario_project_results.append(gather_project_results(seed, project))
                     scenario_timeline_results.append(gather_timeline_results(seed, project))
 
@@ -520,7 +520,7 @@ if __name__ == "__main__":
                 project_results = pd.concat(scenario_project_results, axis=0)
                 timeline_results = pd.concat(scenario_timeline_results, axis=0)
 
-                results_file = library_path / "results" / f"{scenario}.xlsx"
+                results_file = library_path / "results" / f"wombat_{scenario}.xlsx"
                 with pd.ExcelWriter(results_file) as writer:
                     project_results.to_excel(writer, sheet_name="Project", merge_cells=False)
                     timeline_results.to_excel(writer, sheet_name="MonthYear", merge_cells=False)
