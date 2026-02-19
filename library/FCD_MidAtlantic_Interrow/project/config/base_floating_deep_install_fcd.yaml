@@ -71,6 +71,9 @@ custom_filename: C:\\Code\\FloatingArrayDesign\\FADesign\\scripts\\fishing_co-de
 process_times:
   anchor_load_time: 1.5             # Anchor loading onto vessel
   mooring_line_load_time: 4         # Mooring line loading onto vessel
+  # need to specify 'mooring_system_load_time' when using the standard installation method (default)
+  # when installation_method=='sequential', then you can use 'mooring_line_load_time' and 'anchor_load_time'
+  # when the MooringSystem Cargo object is used (when standard installation method is selected), it only looks for the 'mooring_system_load_time' to "fasten()"
 
 substation_design:
   oss_substructure_type: Floating

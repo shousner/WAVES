@@ -1,6 +1,7 @@
 from copy import deepcopy
 from time import perf_counter
 from pathlib import Path
+import os
 
 import numpy as np
 import pandas as pd
@@ -636,7 +637,7 @@ def generate_report_lcoe_breakdown_adjusted(project):
 
 
 
-def plot_LCOE_waterfall(technology, df, width=8, height=6, y_min=None, y_max=None):
+def plot_LCOE_waterfall(technology, df, width=8, height=6, y_min=None, y_max=None, outfile=None):
     import numpy as np
     import pandas as pd
     import matplotlib.pyplot as plt
@@ -783,12 +784,14 @@ def plot_LCOE_waterfall(technology, df, width=8, height=6, y_min=None, y_max=Non
     ax.spines['right'].set_visible(False)
     plt.tight_layout()
     #fig.savefig("C:\\Code\\WAVES\\library\\Standardized_Moorings\\results\\LCOE_waterfall.png", bbox_inches='tight')
-    fig.savefig("C:\\Code\\WAVES\\library\\Standardized_Moorings3\\results\\LCOE_waterfall.png", bbox_inches='tight')
+    #fig.savefig("C:\\Code\\WAVES\\library\\Standardized_Moorings3\\results\\LCOE_waterfall.png", bbox_inches='tight')
+    if outfile:
+        fig.savefig(outfile, bbox_inches='tight')
     plt.show()
 
 
 
-def create_waterfall_chart(df_1, total_1, df_2, total_2, color_2):
+def create_waterfall_chart(df_1, total_1, df_2, total_2, color_2, outfile=None):
     import matplotlib.pyplot as plt
     import textwrap
     # Calculate the total value of df_1 and df_2
@@ -870,9 +873,23 @@ def create_waterfall_chart(df_1, total_1, df_2, total_2, color_2):
         labels.append(textwrap.fill(text, width=15, break_long_words=False))
     ax.set_xticklabels(labels)
     
+    # Calculate automatic y-axis limits based on LCOE values
+    min_lcoe = min(total_df1, total_df2)
+    max_lcoe = max(total_df1, total_df2)
+    
+    # Add padding for better visualization
+    padding_below = 2.0
+    padding_above = 1.0
+    
+    y_min = min_lcoe - padding_below
+    y_max = max_lcoe + padding_above
+    
+    # Round to nice numbers (to nearest 0.5 for cleaner axis labels)
+    y_min = np.floor(y_min * 2) / 2
+    y_max = np.ceil(y_max * 2) / 2
+    
     # Set y-axis limit
-    ax.set_ylim([115, 121])
-    #ax.set_ylim([128, 133.5])
+    ax.set_ylim([y_min, y_max])
     #plt.grid(axis = 'y', zorder = 100)
     from matplotlib.ticker import MaxNLocator
     ax.yaxis.set_major_locator(MaxNLocator(integer=True))
@@ -882,6 +899,8 @@ def create_waterfall_chart(df_1, total_1, df_2, total_2, color_2):
     fig.tight_layout()
     #fig.savefig("C:\\Code\\WAVES\\library\\Standardized_Moorings\\results\\comparison_waterfall.png", bbox_inches='tight')
     #fig.savefig("C:\\Code\\WAVES\\library\\Standardized_Moorings3\\results\\comparison_waterfall.png", bbox_inches='tight')
+    if outfile:
+        fig.savefig(outfile, bbox_inches='tight')
 
     plt.show()
 
@@ -899,11 +918,17 @@ project_floating2 = runRunWAVES(10, Path("library/Standardized_Moorings2/"))
 project_floating1 = runRunWAVES(10, Path("library/Standardized_Moorings3/"))
 project_floating2 = runRunWAVES(10, Path("library/Standardized_Moorings4/"))
 '''
+'''
+project_floating_fcd_gulfofmaine_baseline = runRunWAVES(10, Path("library/FCD_Baseline/"))
+if "DATA_LIBRARY" in os.environ:
+    del os.environ["DATA_LIBRARY"]
+project_floating_fcd_gulfofmaine_interrow = runRunWAVES(10, Path("library/FCD_Interrow/"))
+'''
+project_floating_fcd_midatlantic_baseline = runRunWAVES(10, Path("library/FCD_MidAtlantic_Baseline/"))
+if "DATA_LIBRARY" in os.environ:
+    del os.environ["DATA_LIBRARY"]
 
-#project_floating_fcd_gulfofmaine_baseline = runRunWAVES(10, Path("library/FCD_Baseline/"))
-#project_floating_fcd_gulfofmaine_interrow = runRunWAVES(10, Path("library/FCD_Interrow/"))
-#project_floating_fcd_midatlantic_baseline = runRunWAVES(1, Path("library/FCD_MidAtlantic_Baseline/"))
-project_floating_fcd_midatlantic_interrow = runRunWAVES(1, Path("library/FCD_MidAtlantic_Interrow/"))
+project_floating_fcd_midatlantic_interrow = runRunWAVES(10, Path("library/FCD_MidAtlantic_Interrow/"))
 
 #df1 = project_floating1.generate_report_lcoe_breakdown()
 #df2 = project_floating2.generate_report_lcoe_breakdown()
@@ -913,18 +938,19 @@ project_floating_fcd_midatlantic_interrow = runRunWAVES(1, Path("library/FCD_Mid
 #df3 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd_gulfofmaine_baseline)
 #df4 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd_gulfofmaine_interrow)
 
-#df5 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd_midatlantic_baseline)
+df5 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd_midatlantic_baseline)
 df6 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd_midatlantic_interrow)
 
-#plot_LCOE_waterfall('test', df3)
-#plot_LCOE_waterfall('test', df4)
-#plot_LCOE_waterfall('test', df5)
-plot_LCOE_waterfall('test', df6)
+#plot_LCOE_waterfall('test', df3, outfile="C:\\Code\\WAVES\\library\\FCD_Baseline\\results\\LCOE_waterfall.png")
+#plot_LCOE_waterfall('test', df4, outfile="C:\\Code\\WAVES\\library\\FCD_Interrow\\results\\LCOE_waterfall.png")
+plot_LCOE_waterfall('test', df5, outfile="C:\\Code\\WAVES\\library\\FCD_MidAtlantic_Baseline\\results\\LCOE_waterfall.png")
+plot_LCOE_waterfall('test', df6, outfile="C:\\Code\\WAVES\\library\\FCD_MidAtlantic_Interrow\\results\\LCOE_waterfall.png")
 
 
 #create_waterfall_chart(df1, 'Baseline', df2, 'Standardized', 'lightskyblue')
-create_waterfall_chart(df3, 'Baseline', df4, 'Fishing-Informed', 'lightskyblue')
-#create_waterfall_chart(df5, 'Baseline', df6, 'Fishing-Informed', 'lightskyblue')
+
+#create_waterfall_chart(df3, 'Baseline', df4, 'Fishing-Informed', 'lightskyblue', outfile="C:\\Code\\WAVES\\library\\FCD_Baseline\\results\\comparison_waterfall.png")
+create_waterfall_chart(df5, 'Baseline', df6, 'Fishing-Informed', 'lightskyblue', outfile="C:\\Code\\WAVES\\library\\FCD_MidAtlantic_Baseline\\results\\comparison_waterfall.png")
 
 
 '''
@@ -935,17 +961,21 @@ df2.loc[df2["Component"]=="Array System Installation", "Value ($/MWh)"] /= 2
 
 
 
+#project_floating1 = project_floating_fcd_gulfofmaine_baseline
+#project_floating2 = project_floating_fcd_gulfofmaine_interrow
+project_floating1 = project_floating_fcd_midatlantic_baseline
+project_floating2 = project_floating_fcd_midatlantic_interrow
 
-
+project_capacity = 1980000 # [kW]
 
 for name,value in project_floating1.orbit.capex_breakdown.items():
-    print(name, value/600000)
+    print(name, value/project_capacity)
 
 for name,value in project_floating2.orbit.capex_breakdown.items():
-    print(name, value/600000)
+    print(name, value/project_capacity)
 
-capex1 = project_floating1.orbit.total_capex
-capex2 = project_floating2.orbit.total_capex
+capex1 = project_floating1.orbit.total_capex/project_capacity
+capex2 = project_floating2.orbit.total_capex/project_capacity
 
 aep_per_kw1 = project_floating1.energy_production(units="mw", per_capacity="kw", aep=True)
 aep_per_kw2 = project_floating2.energy_production(units="mw", per_capacity="kw", aep=True)
@@ -963,5 +993,29 @@ average_opex2 = opex_df2["OpEx"].mean()
 
 print(average_opex1)
 print(average_opex2)
+
+
+#outfile = "C:\\Code\\WAVES\\library\\FCD_Baseline\\results\\analysis_results.txt"
+outfile = "C:\\Code\\WAVES\\library\\FCD_MidAtlantic_Baseline\\results\\analysis_results.txt"
+with open(outfile, 'w') as f:
+
+    f.write("BASELINE - CapEx Breakdown ($/kW):\n")
+    f.write("-" * 40 + "\n")
+    for name, value in project_floating1.orbit.capex_breakdown.items():
+        f.write(f"{name:<35}: ${value/project_capacity:>8.2f}\n")
+    f.write(f"{'Total CapEx':<35}: ${capex1:>8.2f}\n\n")
+    
+    f.write("FISHING-INFORMED - CapEx Breakdown ($/kW):\n")
+    f.write("-" * 40 + "\n")
+    for name, value in project_floating2.orbit.capex_breakdown.items():
+        f.write(f"{name:<35}: ${value/project_capacity:>8.2f}\n")
+    f.write(f"{'Total CapEx':<35}: ${capex2:>8.2f}\n\n")
+
+    f.write(f'{aep_per_kw1}')
+    f.write(f'{aep_per_kw2}')
+    f.write(f'{average_opex1}')
+    f.write(f'{average_opex2}')
+
+
 
 a = 2
