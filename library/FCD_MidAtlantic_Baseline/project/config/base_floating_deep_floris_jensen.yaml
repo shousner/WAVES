@@ -1,4 +1,4 @@
-description: Standardized Moorings Layout using Jensen-Jimenez
+description: FCD Mid-Atlantic Baseline using GCH
 farm:
   layout_x:
   - 8855.07035
@@ -402,7 +402,7 @@ farm:
   - iea_15MW_240m
   - iea_15MW_240m
   - iea_15MW_240m
-floris_version: v3.0.0
+floris_version: v4.2
 flow_field:
   air_density: 1.225
   reference_wind_height: -1
@@ -431,9 +431,9 @@ wake:
   enable_yaw_added_recovery: true
   model_strings:
     combination_model: sosfs
-    deflection_model: jimenez
+    deflection_model: gauss
     turbulence_model: crespo_hernandez
-    velocity_model: jensen
+    velocity_model: gauss
   wake_deflection_parameters:
     gauss:
       ad: 0.0

@@ -11,7 +11,7 @@ from waves import Project
 from waves.utilities import load_yaml
 
 # Update core Pandas display settings
-pd.options.display.float_format = "{:,.2f}".format
+#pd.options.display.float_format = "{:,.2f}".format
 pd.options.display.max_columns = 100
 pd.options.display.max_rows = 100
 
@@ -120,28 +120,6 @@ def average_and_save(dfs, filename, index_cols=None):
     df_avg.to_csv(filename)
     print(f"Saved: {filename}")
 
-NUM_RUNS = 1
-rng = np.random.default_rng(seed=834)
-
-# Containers for each metric
-capex_dfs = []
-opex_dfs = []
-charter_days_dfs = []
-mobilization_dfs = []
-delay_dfs = []
-failure_cost_dfs = []
-equipment_cost_dfs = []
-report_dfs = []
-losses_dfs = []
-
-library_path = Path("library/Standardized_Moorings/")
-config_floating = load_yaml(library_path / "project/config", "base_floating_deep.yaml")
-config_floating["floris_config"] = load_yaml(library_path / "project/config", config_floating["floris_config"])
-config_floating["floris_config"]["farm"]["turbine_library_path"] = library_path / "turbines"
-config_floating.update({"library_path": library_path})
-
-config_wombat = load_yaml(library_path / "project/config", config_floating["wombat_config"])
-
 def runRunWAVES(NUM_RUNS, library_path):
 
     rng = np.random.default_rng(seed=834)
@@ -155,6 +133,7 @@ def runRunWAVES(NUM_RUNS, library_path):
     equipment_cost_dfs = []
     report_dfs = []
     losses_dfs = []
+    df_projects = []
 
     config_floating = load_yaml(library_path / "project/config", "base_floating_deep.yaml")
     config_floating["floris_config"] = load_yaml(library_path / "project/config", config_floating["floris_config"])
@@ -315,26 +294,28 @@ def runRunWAVES(NUM_RUNS, library_path):
         report_df_floating.loc[report_df_floating.index.str.contains("%")] *= 100
         report_dfs.append(report_df_floating)
 
+        df_projects.append(generate_report_lcoe_breakdown_adjusted(project_floating))
+
         #8. Losses report
         report_df_losses = project_floating.loss_ratio(breakdown=True)
         losses_dfs.append(report_df_losses) 
+    
+    df_capex = pd.concat(capex_dfs).groupby("Component").mean()
+    df_opex = pd.concat(opex_dfs).groupby(level=0).mean()
+    df_report = pd.concat(report_dfs).groupby("Metrics").mean()
+    
+    capex_per_kw = df_capex[["CapEx ($/kW) - Floating"]]
+    capex_metrics = capex_per_kw.copy()
+    capex_metrics.index = [f"CapEx - {component} ($/kW)" for component in capex_per_kw.index]
+    project_col_name = df_report.columns[0]
+    capex_metrics.columns = [project_col_name]
+    df_report = pd.concat([df_report, capex_metrics])
+    df_report.to_csv(library_path / 'results/lcoe_results.csv')
 
-    return project_floating
+    return df_projects, df_report
 
 
-'''
-# === Compute and save averages ===
-__location__ = "C:\\Code\\WAVES\\examples\\standmoor-results\\"
-average_and_save(capex_dfs, __location__+"deep_average_capex.csv", index_cols="Component")
-average_and_save(opex_dfs, __location__+"deep_average_opex.csv")
-average_and_save(charter_days_dfs, __location__+"deep_average_charter_days.csv", index_cols="vessel")
-average_and_save(mobilization_dfs, __location__+"deep_average_mobilization_summary.csv", index_cols="agent")
-average_and_save(delay_dfs, __location__+"deep_average_delay_summary.csv", index_cols=["agent", "additional"])
-average_and_save(failure_cost_dfs, __location__+"deep_average_failures_costs.csv", index_cols=["subassembly", "task"])
-average_and_save(equipment_cost_dfs, __location__+"deep_average_equipment_costs.csv")
-average_and_save(report_dfs, __location__+"deep_average_report_df.csv", index_cols="Metrics")
-average_and_save(losses_dfs, __location__+"deep_average_losses_report_df.csv")
-'''
+
 
 
 
@@ -845,7 +826,7 @@ def create_waterfall_chart(df_1, total_1, df_2, total_2, color_2, outfile=None):
     fig, ax = plt.subplots(figsize=(6, 5))
     ax.bar(labels, white_bar_heights, color='white')
 
-    colors = ['red' if h < 0 else 'green' for h in heights]
+    colors = ['lightcoral' if h < 0 else 'lightgreen' for h in heights]
     colors[0] = color_2
     colors[-1] = color_2
 
@@ -879,13 +860,13 @@ def create_waterfall_chart(df_1, total_1, df_2, total_2, color_2, outfile=None):
     
     # Add padding for better visualization
     padding_below = 2.0
-    padding_above = 1.0
+    # Increase padding above when y_min = 0 to accommodate text labels
+    padding_above = 6.0  # Increased to provide space for text labels above bars
     
-    y_min = min_lcoe - padding_below
+    y_min = 0
     y_max = max_lcoe + padding_above
     
     # Round to nice numbers (to nearest 0.5 for cleaner axis labels)
-    y_min = np.floor(y_min * 2) / 2
     y_max = np.ceil(y_max * 2) / 2
     
     # Set y-axis limit
@@ -905,12 +886,275 @@ def create_waterfall_chart(df_1, total_1, df_2, total_2, color_2, outfile=None):
     plt.show()
 
 
+def load_and_average_project_runs(results_dir_path, num_runs=10):
+    """
+    Load and average the LCOE breakdown data from multiple project run CSV files.
+    
+    Parameters:
+    -----------
+    results_dir_path : Path or str
+        Path to the results directory containing the project_run*.csv files
+    num_runs : int
+        Number of runs to average (default: 10)
+        
+    Returns:
+    --------
+    pd.DataFrame
+        Averaged LCOE breakdown dataframe with same structure as individual runs
+    """
+    results_path = Path(results_dir_path)
+    
+    # Load all project run CSV files
+    project_dfs = []
+    for i in range(1, num_runs + 1):
+        csv_file = results_path / f"project_run{i}.csv"
+        if csv_file.exists():
+            df = pd.read_csv(csv_file, index_col=0)
+            project_dfs.append(df)
+        else:
+            print(f"Warning: {csv_file} not found, skipping...")
+    
+    if not project_dfs:
+        raise ValueError(f"No project run CSV files found in {results_path}")
+    
+    print(f"Loaded {len(project_dfs)} project run files from {results_path}")
+    
+    # Concatenate all dataframes and calculate mean for each component
+    df_concat = pd.concat(project_dfs, ignore_index=False)
+    
+    # Separate numeric and non-numeric columns
+    numeric_cols = df_concat.select_dtypes(include=[np.number]).columns
+    non_numeric_cols = df_concat.select_dtypes(exclude=[np.number]).columns
+    
+    # Calculate mean for numeric columns only
+    if len(numeric_cols) > 0:
+        df_avg_numeric = df_concat[numeric_cols].groupby(df_concat.index).mean()
+    else:
+        df_avg_numeric = pd.DataFrame(index=df_concat.index.unique())
+    
+    # For non-numeric columns, take values from the first dataframe (they should be identical across runs)
+    if len(non_numeric_cols) > 0 and len(project_dfs) > 0:
+        df_non_numeric = project_dfs[0][non_numeric_cols].copy()
+        # Combine numeric averages with non-numeric values
+        df_avg = df_non_numeric.join(df_avg_numeric, how='outer')
+        # Reorder columns to match original structure if possible
+        if len(project_dfs[0].columns) > 0:
+            original_col_order = [col for col in project_dfs[0].columns if col in df_avg.columns]
+            df_avg = df_avg[original_col_order]
+    else:
+        df_avg = df_avg_numeric
+    
+    # Remove rows with NaN values in critical columns
+    if 'Value ($/MWh)' in df_avg.columns:
+        df_avg = df_avg.dropna(subset=['Value ($/MWh)'])
+    
+    # Remove rows where Component or Category is NaN
+    if 'Component' in df_avg.columns:
+        df_avg = df_avg.dropna(subset=['Component'])
+    if 'Category' in df_avg.columns:
+        df_avg = df_avg.dropna(subset=['Category'])
+    
+    # Reset index to clean up any remaining NaN index values
+    df_avg = df_avg.reset_index(drop=True)
+    
+    return df_avg
+
+
+def create_individual_waterfall_charts_from_project_runs(baseline_results_dir, interrow_results_dir, output_dir=None, num_runs=10):
+    """
+    Create individual waterfall charts from averaged project run data.
+    
+    Parameters:
+    -----------
+    baseline_results_dir : Path or str
+        Path to baseline results directory containing project_run*.csv files
+    interrow_results_dir : Path or str  
+        Path to interrow results directory containing project_run*.csv files
+    output_dir : Path or str, optional
+        Directory to save output charts. If None, uses baseline_results_dir/figures
+    num_runs : int
+        Number of runs to average (default: 10)
+    """
+    
+    print("Creating individual waterfall charts from averaged project run data...")
+    
+    # Load and average the project run data
+    df_baseline_avg = load_and_average_project_runs(baseline_results_dir, num_runs)
+    df_interrow_avg = load_and_average_project_runs(interrow_results_dir, num_runs)
+    
+    # Set output directory
+    if output_dir is None:
+        output_dir = Path(baseline_results_dir) / "figures"
+    else:
+        output_dir = Path(output_dir)
+    output_dir.mkdir(exist_ok=True)
+    
+    # Create individual waterfall charts for averaged data
+    baseline_outfile = output_dir / "averaged_individual_waterfall_baseline.png"
+    interrow_outfile = output_dir / "averaged_individual_waterfall_interrow.png"
+    
+    print(f"Creating individual waterfall charts from averaged project runs...")
+    
+    # Individual waterfall charts
+    plot_LCOE_waterfall('Baseline (Averaged Project Runs)', df_baseline_avg, outfile=baseline_outfile)
+    plot_LCOE_waterfall('Fishing-Informed (Averaged Project Runs)', df_interrow_avg, outfile=interrow_outfile)
+    
+    print(f"Individual waterfall charts saved to: {output_dir}")
+    
+    return df_baseline_avg, df_interrow_avg
+
+
+def load_lcoe_results_and_create_breakdown(results_dir_path):
+    """
+    Load LCOE results CSV and convert to waterfall chart format.
+    
+    Parameters:
+    -----------
+    results_dir_path : Path or str
+        Path to the results directory containing the lcoe_results.csv file
+        
+    Returns:
+    --------
+    tuple: (pd.DataFrame, float)
+        LCOE breakdown dataframe formatted for waterfall charts, and the reported LCOE value
+    """
+    results_path = Path(results_dir_path)
+    lcoe_file = results_path / "lcoe_results.csv"
+    
+    if not lcoe_file.exists():
+        raise ValueError(f"LCOE results file not found: {lcoe_file}")
+    
+    # Load the LCOE results
+    df_report = pd.read_csv(lcoe_file, index_col=0)
+    
+    print(f"Loaded LCOE results from: {lcoe_file}")
+    print(f"Available metrics: {list(df_report.index)}")
+    
+    # Extract LCOE components from the report
+    # Look for CapEx components (they start with "CapEx - ")
+    capex_metrics = df_report[df_report.index.str.contains("CapEx -", na=False)]
+    
+    # Get OpEx if available
+    opex_metrics = df_report[df_report.index.str.contains("OpEx", na=False)]
+    
+    # Get key values
+    try:
+        fcr = df_report.loc["FCR (%)", df_report.columns[0]] / 100  # Convert percentage to decimal
+        net_aep = df_report.loc["AEP per kW (MWh/kW)", df_report.columns[0]]
+        total_lcoe = df_report.loc["LCOE ($/MWh)", df_report.columns[0]]
+    except KeyError as e:
+        print(f"Warning: Could not find expected metric in LCOE results: {e}")
+        # Use default values if metrics are missing
+        fcr = 0.075  # Default FCR
+        net_aep = 4.0  # Default net AEP
+        total_lcoe = df_report.loc[df_report.index.str.contains("LCOE", na=False)].iloc[0, 0] if any(df_report.index.str.contains("LCOE", na=False)) else 100
+    
+    # Create waterfall format dataframe
+    waterfall_data = []
+    
+    # Process CapEx components
+    for idx, row in capex_metrics.iterrows():
+        component_name = idx.replace("CapEx - ", "").replace(" ($/kW)", "")
+        value_per_kw = row.iloc[0]
+        value_per_kw_yr = value_per_kw * fcr
+        value_per_mwh = value_per_kw_yr / net_aep
+        
+        waterfall_data.append({
+            "Component": component_name,
+            "Category": "CapEx",
+            "Value ($/kW)": value_per_kw,
+            "Fixed charge rate (FCR) (real)": fcr,
+            "Value ($/kW-yr)": value_per_kw_yr,
+            "Net AEP (MWh/kW/yr)": net_aep,
+            "Value ($/MWh)": value_per_mwh
+        })
+    
+    # Process OpEx components
+    for idx, row in opex_metrics.iterrows():
+        if "per kW" in idx:
+            component_name = idx.replace("OpEx per kW ($/kW)", "OpEx").replace("Annual OpEx per kW ($/kW)", "OpEx")
+            value_per_kw_yr = row.iloc[0]  # This is already per year
+            value_per_kw = value_per_kw_yr / fcr  # Back-calculate total value
+            value_per_mwh = value_per_kw_yr / net_aep
+            
+            waterfall_data.append({
+                "Component": "OpEx",
+                "Category": "OpEx", 
+                "Value ($/kW)": value_per_kw,
+                "Fixed charge rate (FCR) (real)": fcr,
+                "Value ($/kW-yr)": value_per_kw_yr,
+                "Net AEP (MWh/kW/yr)": net_aep,
+                "Value ($/MWh)": value_per_mwh
+            })
+            break  # Only need one OpEx entry
+    
+    # Create DataFrame
+    df_waterfall = pd.DataFrame(waterfall_data)
+    
+    # Validate that our calculated LCOE matches the reported LCOE
+    calculated_lcoe = df_waterfall["Value ($/MWh)"].sum()
+    print(f"Calculated LCOE: {calculated_lcoe:.2f} $/MWh")
+    print(f"Reported LCOE: {total_lcoe:.2f} $/MWh")
+    print(f"Difference: {abs(calculated_lcoe - total_lcoe):.2f} $/MWh")
+    
+    return df_waterfall, total_lcoe
+
+
+def create_comparison_waterfall_from_lcoe_results(baseline_results_dir, interrow_results_dir, output_dir=None):
+    """
+    Create comparison waterfall chart using the lcoe_results.csv files.
+    
+    Parameters:
+    -----------
+    baseline_results_dir : Path or str
+        Path to baseline results directory containing lcoe_results.csv
+    interrow_results_dir : Path or str  
+        Path to interrow results directory containing lcoe_results.csv
+    output_dir : Path or str, optional
+        Directory to save output charts. If None, uses baseline_results_dir/figures
+    """
+    
+    print("Creating comparison waterfall chart from LCOE results CSV files...")
+    
+    # Load and convert LCOE results to waterfall format
+    df_baseline, baseline_lcoe_reported = load_lcoe_results_and_create_breakdown(baseline_results_dir)
+    df_interrow, interrow_lcoe_reported = load_lcoe_results_and_create_breakdown(interrow_results_dir)
+    
+    # Set output directory
+    if output_dir is None:
+        output_dir = Path(baseline_results_dir) / "figures"
+    else:
+        output_dir = Path(output_dir)
+    output_dir.mkdir(exist_ok=True)
+    
+    # Create comparison waterfall chart
+    comparison_outfile = output_dir / "lcoe_results_comparison_waterfall.png"
+    
+    # Comparison waterfall chart only
+    create_waterfall_chart(
+        df_baseline, 
+        'Baseline', 
+        df_interrow, 
+        'Fishing-Informed', 
+        'lightskyblue', 
+        outfile=comparison_outfile
+    )
+    
+    return df_baseline, df_interrow
+
+
+
+
+
+
+
+
+######################################################################################################
 
 # Standardized_Moorings = Humboldt Baseline
 # Standardized_Moorings2 = Humboldt Standardized
 # Standardized_Moorings3 = Morro Bay Baseline
 # Standardized_Moorings4 = Morro Bay Standardized
-
 '''
 project_floating1 = runRunWAVES(10, Path("library/Standardized_Moorings/"))
 project_floating2 = runRunWAVES(10, Path("library/Standardized_Moorings2/"))
@@ -918,103 +1162,87 @@ project_floating2 = runRunWAVES(10, Path("library/Standardized_Moorings2/"))
 project_floating1 = runRunWAVES(10, Path("library/Standardized_Moorings3/"))
 project_floating2 = runRunWAVES(10, Path("library/Standardized_Moorings4/"))
 '''
-'''
-project_floating_fcd_gulfofmaine_baseline = runRunWAVES(10, Path("library/FCD_Baseline/"))
-if "DATA_LIBRARY" in os.environ:
-    del os.environ["DATA_LIBRARY"]
-project_floating_fcd_gulfofmaine_interrow = runRunWAVES(10, Path("library/FCD_Interrow/"))
-'''
-project_floating_fcd_midatlantic_baseline = runRunWAVES(10, Path("library/FCD_MidAtlantic_Baseline/"))
-if "DATA_LIBRARY" in os.environ:
-    del os.environ["DATA_LIBRARY"]
-
-project_floating_fcd_midatlantic_interrow = runRunWAVES(10, Path("library/FCD_MidAtlantic_Interrow/"))
-
 #df1 = project_floating1.generate_report_lcoe_breakdown()
 #df2 = project_floating2.generate_report_lcoe_breakdown()
 #df1 = generate_report_lcoe_breakdown_adjusted(project_floating1)
 #df2 = generate_report_lcoe_breakdown_adjusted(project_floating2)
 
-#df3 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd_gulfofmaine_baseline)
-#df4 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd_gulfofmaine_interrow)
-
-df5 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd_midatlantic_baseline)
-df6 = generate_report_lcoe_breakdown_adjusted(project_floating_fcd_midatlantic_interrow)
-
-#plot_LCOE_waterfall('test', df3, outfile="C:\\Code\\WAVES\\library\\FCD_Baseline\\results\\LCOE_waterfall.png")
-#plot_LCOE_waterfall('test', df4, outfile="C:\\Code\\WAVES\\library\\FCD_Interrow\\results\\LCOE_waterfall.png")
-plot_LCOE_waterfall('test', df5, outfile="C:\\Code\\WAVES\\library\\FCD_MidAtlantic_Baseline\\results\\LCOE_waterfall.png")
-plot_LCOE_waterfall('test', df6, outfile="C:\\Code\\WAVES\\library\\FCD_MidAtlantic_Interrow\\results\\LCOE_waterfall.png")
-
-
-#create_waterfall_chart(df1, 'Baseline', df2, 'Standardized', 'lightskyblue')
-
-#create_waterfall_chart(df3, 'Baseline', df4, 'Fishing-Informed', 'lightskyblue', outfile="C:\\Code\\WAVES\\library\\FCD_Baseline\\results\\comparison_waterfall.png")
-create_waterfall_chart(df5, 'Baseline', df6, 'Fishing-Informed', 'lightskyblue', outfile="C:\\Code\\WAVES\\library\\FCD_MidAtlantic_Baseline\\results\\comparison_waterfall.png")
-
-
-'''
-df2 = df1.copy()
-df2.loc[df2["Component"]=="Mooring System Installation", "Value ($/MWh)"] *= 2
-df2.loc[df2["Component"]=="Array System Installation", "Value ($/MWh)"] /= 2
-'''
 
 
 
-#project_floating1 = project_floating_fcd_gulfofmaine_baseline
-#project_floating2 = project_floating_fcd_gulfofmaine_interrow
-project_floating1 = project_floating_fcd_midatlantic_baseline
-project_floating2 = project_floating_fcd_midatlantic_interrow
-
-project_capacity = 1980000 # [kW]
-
-for name,value in project_floating1.orbit.capex_breakdown.items():
-    print(name, value/project_capacity)
-
-for name,value in project_floating2.orbit.capex_breakdown.items():
-    print(name, value/project_capacity)
-
-capex1 = project_floating1.orbit.total_capex/project_capacity
-capex2 = project_floating2.orbit.total_capex/project_capacity
-
-aep_per_kw1 = project_floating1.energy_production(units="mw", per_capacity="kw", aep=True)
-aep_per_kw2 = project_floating2.energy_production(units="mw", per_capacity="kw", aep=True)
-
-print(capex1)
-print(capex2)
-print(aep_per_kw1)
-print(aep_per_kw2)
-
-opex_df1 = project_floating1.wombat.metrics.opex(frequency='annual', by_category=True) / project_floating1.capacity("kw")
-average_opex1 = opex_df1["OpEx"].mean()
-
-opex_df2 = project_floating2.wombat.metrics.opex(frequency='annual', by_category=True) / project_floating2.capacity("kw")
-average_opex2 = opex_df2["OpEx"].mean()
-
-print(average_opex1)
-print(average_opex2)
+run = 0
+NUM_RUNS = 10
+gom = 1
 
 
-#outfile = "C:\\Code\\WAVES\\library\\FCD_Baseline\\results\\analysis_results.txt"
-outfile = "C:\\Code\\WAVES\\library\\FCD_MidAtlantic_Baseline\\results\\analysis_results.txt"
-with open(outfile, 'w') as f:
+if run:
+    if gom:
+        projects_df_fcd_gulfofmaine_baseline, report_df_fcd_gulfofmaine_baseline = runRunWAVES(NUM_RUNS, Path("library/FCD_Baseline/"))
+        if "DATA_LIBRARY" in os.environ:
+            del os.environ["DATA_LIBRARY"]
+        projects_df_fcd_gulfofmaine_interrow, report_df_fcd_gulfofmaine_interrow = runRunWAVES(NUM_RUNS, Path("library/FCD_Interrow/"))
+    else:
+        projects_df_fcd_midatlantic_baseline, report_df_fcd_midatlantic_baseline = runRunWAVES(NUM_RUNS, Path("library/FCD_MidAtlantic_Baseline/"))
+        if "DATA_LIBRARY" in os.environ:
+            del os.environ["DATA_LIBRARY"]
+        projects_df_fcd_midatlantic_interrow, report_df_fcd_midatlantic_interrow = runRunWAVES(NUM_RUNS, Path("library/FCD_MidAtlantic_Interrow/"))
 
-    f.write("BASELINE - CapEx Breakdown ($/kW):\n")
-    f.write("-" * 40 + "\n")
-    for name, value in project_floating1.orbit.capex_breakdown.items():
-        f.write(f"{name:<35}: ${value/project_capacity:>8.2f}\n")
-    f.write(f"{'Total CapEx':<35}: ${capex1:>8.2f}\n\n")
-    
-    f.write("FISHING-INFORMED - CapEx Breakdown ($/kW):\n")
-    f.write("-" * 40 + "\n")
-    for name, value in project_floating2.orbit.capex_breakdown.items():
-        f.write(f"{name:<35}: ${value/project_capacity:>8.2f}\n")
-    f.write(f"{'Total CapEx':<35}: ${capex2:>8.2f}\n\n")
 
-    f.write(f'{aep_per_kw1}')
-    f.write(f'{aep_per_kw2}')
-    f.write(f'{average_opex1}')
-    f.write(f'{average_opex2}')
+    if gom:
+        for i,(df_project1,df_project2) in enumerate(zip(projects_df_fcd_gulfofmaine_baseline, projects_df_fcd_gulfofmaine_interrow)):
+            df_project1.to_csv(Path("library/FCD_Baseline/results") / f"project_run{i+1}.csv")
+            df_project2.to_csv(Path("library/FCD_Interrow/results") / f"project_run{i+1}.csv")
+            plot_LCOE_waterfall('test', df_project1, outfile=Path("library/FCD_Baseline/results/figures") / f"LCOE_waterfall{i+1}.png")
+            plot_LCOE_waterfall('test', df_project2, outfile=Path("library/FCD_Interrow/results/figures") / f"LCOE_waterfall{i+1}.png")
+            create_waterfall_chart(df_project1, 'Baseline', df_project2, 'Fishing-Informed', 'lightskyblue', outfile=Path("library/FCD_Baseline/results/figures") / f"comparison_LCOE_waterfall{i+1}.png")
+    else:
+        for i,(df_project1,df_project2) in enumerate(zip(projects_df_fcd_midatlantic_baseline, projects_df_fcd_midatlantic_interrow)):
+            df_project1.to_csv(Path("library/FCD_MidAtlantic_Baseline/results") / f"project_run{i+1}.csv")
+            df_project2.to_csv(Path("library/FCD_MidAtlantic_Interrow/results") / f"project_run{i+1}.csv")
+            plot_LCOE_waterfall('test', df_project1, outfile=Path("library/FCD_MidAtlantic_Baseline/results/figures") / f"LCOE_waterfall{i+1}.png")
+            plot_LCOE_waterfall('test', df_project2, outfile=Path("library/FCD_MidAtlantic_Interrow/results/figures") / f"LCOE_waterfall{i+1}.png")
+            create_waterfall_chart(df_project1, 'Baseline', df_project2, 'Fishing-Informed', 'lightskyblue', outfile=Path("library/FCD_MidAtlantic_Baseline/results/figures") / f"comparison_LCOE_waterfall{i+1}.png")
+
+
+    if gom:
+        print(report_df_fcd_gulfofmaine_baseline)
+        print(report_df_fcd_gulfofmaine_interrow)
+    else:
+        print(report_df_fcd_midatlantic_baseline)
+        print(report_df_fcd_midatlantic_interrow)
+
+
+
+
+
+else:
+    if gom:
+        print("\n=== Creating Individual Waterfall Charts from Project Runs ===")
+        df_baseline_avg, df_interrow_avg = create_individual_waterfall_charts_from_project_runs(
+            baseline_results_dir="library/FCD_Baseline/results",
+            interrow_results_dir="library/FCD_Interrow/results",
+            num_runs=NUM_RUNS
+        )
+        
+        print("\n=== Creating Comparison Waterfall Chart from LCOE Results ===")
+        df_baseline_lcoe, df_interrow_lcoe = create_comparison_waterfall_from_lcoe_results(
+            baseline_results_dir="library/FCD_Baseline/results",
+            interrow_results_dir="library/FCD_Interrow/results"
+        )
+    else:
+        print("\n=== Creating Individual Waterfall Charts from Project Runs ===")
+        df_baseline_avg, df_interrow_avg = create_individual_waterfall_charts_from_project_runs(
+            baseline_results_dir="library/FCD_MidAtlantic_Baseline/results",
+            interrow_results_dir="library/FCD_MidAtlantic_Interrow/results",
+            num_runs=NUM_RUNS
+        )
+        
+        print("\n=== Creating Comparison Waterfall Chart from LCOE Results ===")
+        df_baseline_lcoe, df_interrow_lcoe = create_comparison_waterfall_from_lcoe_results(
+            baseline_results_dir="library/FCD_MidAtlantic_Baseline/results",
+            interrow_results_dir="library/FCD_MidAtlantic_Interrow/results"
+        )
+
 
 
 
