@@ -99,6 +99,8 @@ transport_railcar:
 
 # Inputs for CustomMooringSystemDesign
 custom_filename: C:\\Code\\FloatingArrayDesign\\FADesign\\scripts\\standmoor\\orbit\\inputs\\standardized_morrobay.csv
+mooring_system_design:
+  installation_method: 'sequential'
 
 # Inputs for MooringSystemSupplyChain
 chain_supply:

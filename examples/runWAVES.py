@@ -861,12 +861,14 @@ def create_waterfall_chart(df_1, total_1, df_2, total_2, color_2, outfile=None):
     # Add padding for better visualization
     padding_below = 2.0
     # Increase padding above when y_min = 0 to accommodate text labels
-    padding_above = 6.0  # Increased to provide space for text labels above bars
+    padding_above = 1.0  # Increased to provide space for text labels above bars
     
-    y_min = 0
+    #y_min = 0
+    y_min = min_lcoe - padding_below
     y_max = max_lcoe + padding_above
     
     # Round to nice numbers (to nearest 0.5 for cleaner axis labels)
+    y_min = np.floor(y_min * 2) / 2
     y_max = np.ceil(y_max * 2) / 2
     
     # Set y-axis limit
@@ -1151,51 +1153,69 @@ def create_comparison_waterfall_from_lcoe_results(baseline_results_dir, interrow
 
 ######################################################################################################
 
-# Standardized_Moorings = Humboldt Baseline
-# Standardized_Moorings2 = Humboldt Standardized
-# Standardized_Moorings3 = Morro Bay Baseline
-# Standardized_Moorings4 = Morro Bay Standardized
-'''
-project_floating1 = runRunWAVES(10, Path("library/Standardized_Moorings/"))
-project_floating2 = runRunWAVES(10, Path("library/Standardized_Moorings2/"))
 
-project_floating1 = runRunWAVES(10, Path("library/Standardized_Moorings3/"))
-project_floating2 = runRunWAVES(10, Path("library/Standardized_Moorings4/"))
-'''
-#df1 = project_floating1.generate_report_lcoe_breakdown()
-#df2 = project_floating2.generate_report_lcoe_breakdown()
-#df1 = generate_report_lcoe_breakdown_adjusted(project_floating1)
-#df2 = generate_report_lcoe_breakdown_adjusted(project_floating2)
 
 
 
 
 run = 0
 NUM_RUNS = 10
-gom = 1
-
+case = 1
+# Case 1: Comparing Baseline Humboldt to Standardized Humboldt for Standardized Moorings project
+# Case 2: Comparing Baseline Morro Bay to Standardized Morro Bay for Standardized Moorings project
+# Case 3: Comparing Baseline Gulf of Maine to Fishing-Informed Gulf of Maine for Fishing Co-Design project
+# Case 4: Comparing Baseline Mid-Atlantic to Fishing-Informed Mid-Atlantic for Fishing Co-Design project
+# run=1 runs the WAVES code, run=0 plots the WAVES results
 
 if run:
-    if gom:
+
+    if case==1:
+        projects_df_humboldt_baseline, report_df_humboldt_baseline = runRunWAVES(NUM_RUNS, Path("library/Standardized_Moorings/"))              # Humboldt Baseline
+        if "DATA_LIBRARY" in os.environ:
+            del os.environ["DATA_LIBRARY"]
+        projects_df_humboldt_standardized, report_df_humboldt_standardized = runRunWAVES(NUM_RUNS, Path("library/Standardized_Moorings2/"))     # Humboldt Standardized
+    elif case==2:
+        projects_df_morrobay_baseline, report_df_morrobay_baseline = runRunWAVES(NUM_RUNS, Path("library/Standardized_Moorings3/"))             # Morro Bay Baseline
+        if "DATA_LIBRARY" in os.environ:
+            del os.environ["DATA_LIBRARY"]
+        projects_df_morrobay_standardized, report_df_morrobay_standardized = runRunWAVES(NUM_RUNS, Path("library/Standardized_Moorings4/"))     # Morro Bay Standardized
+
+    elif case==3:
         projects_df_fcd_gulfofmaine_baseline, report_df_fcd_gulfofmaine_baseline = runRunWAVES(NUM_RUNS, Path("library/FCD_Baseline/"))
         if "DATA_LIBRARY" in os.environ:
             del os.environ["DATA_LIBRARY"]
         projects_df_fcd_gulfofmaine_interrow, report_df_fcd_gulfofmaine_interrow = runRunWAVES(NUM_RUNS, Path("library/FCD_Interrow/"))
-    else:
+    elif case==4:
         projects_df_fcd_midatlantic_baseline, report_df_fcd_midatlantic_baseline = runRunWAVES(NUM_RUNS, Path("library/FCD_MidAtlantic_Baseline/"))
         if "DATA_LIBRARY" in os.environ:
             del os.environ["DATA_LIBRARY"]
         projects_df_fcd_midatlantic_interrow, report_df_fcd_midatlantic_interrow = runRunWAVES(NUM_RUNS, Path("library/FCD_MidAtlantic_Interrow/"))
 
 
-    if gom:
+    if case==1:
+        for i,(df_project1,df_project2) in enumerate(zip(projects_df_humboldt_baseline, projects_df_humboldt_standardized)):
+            df_project1.to_csv(Path("library/Standardized_Moorings/results") / f"project_run{i+1}.csv")
+            df_project2.to_csv(Path("library/Standardized_Moorings2/results") / f"project_run{i+1}.csv")
+            plot_LCOE_waterfall('test', df_project1, outfile=Path("library/Standardized_Moorings/results/figures") / f"LCOE_waterfall{i+1}.png")
+            plot_LCOE_waterfall('test', df_project2, outfile=Path("library/Standardized_Moorings2/results/figures") / f"LCOE_waterfall{i+1}.png")
+            create_waterfall_chart(df_project1, 'Baseline', df_project2, 'Fishing-Informed', 'lightskyblue', outfile=Path("library/Standardized_Moorings/results/figures") / f"comparison_LCOE_waterfall{i+1}.png")
+    elif case==2:
+        for i,(df_project1,df_project2) in enumerate(zip(projects_df_morrobay_baseline, projects_df_morrobay_standardized)):
+            df_project1.to_csv(Path("library/Standardized_Moorings3/results") / f"project_run{i+1}.csv")
+            df_project2.to_csv(Path("library/Standardized_Moorings4/results") / f"project_run{i+1}.csv")
+            plot_LCOE_waterfall('test', df_project1, outfile=Path("library/Standardized_Moorings3/results/figures") / f"LCOE_waterfall{i+1}.png")
+            plot_LCOE_waterfall('test', df_project2, outfile=Path("library/Standardized_Moorings4/results/figures") / f"LCOE_waterfall{i+1}.png")
+            create_waterfall_chart(df_project1, 'Baseline', df_project2, 'Fishing-Informed', 'lightskyblue', outfile=Path("library/Standardized_Moorings3/results/figures") / f"comparison_LCOE_waterfall{i+1}.png")
+
+
+    elif case==3:
         for i,(df_project1,df_project2) in enumerate(zip(projects_df_fcd_gulfofmaine_baseline, projects_df_fcd_gulfofmaine_interrow)):
             df_project1.to_csv(Path("library/FCD_Baseline/results") / f"project_run{i+1}.csv")
             df_project2.to_csv(Path("library/FCD_Interrow/results") / f"project_run{i+1}.csv")
             plot_LCOE_waterfall('test', df_project1, outfile=Path("library/FCD_Baseline/results/figures") / f"LCOE_waterfall{i+1}.png")
             plot_LCOE_waterfall('test', df_project2, outfile=Path("library/FCD_Interrow/results/figures") / f"LCOE_waterfall{i+1}.png")
             create_waterfall_chart(df_project1, 'Baseline', df_project2, 'Fishing-Informed', 'lightskyblue', outfile=Path("library/FCD_Baseline/results/figures") / f"comparison_LCOE_waterfall{i+1}.png")
-    else:
+    elif case==4:
         for i,(df_project1,df_project2) in enumerate(zip(projects_df_fcd_midatlantic_baseline, projects_df_fcd_midatlantic_interrow)):
             df_project1.to_csv(Path("library/FCD_MidAtlantic_Baseline/results") / f"project_run{i+1}.csv")
             df_project2.to_csv(Path("library/FCD_MidAtlantic_Interrow/results") / f"project_run{i+1}.csv")
@@ -1204,10 +1224,17 @@ if run:
             create_waterfall_chart(df_project1, 'Baseline', df_project2, 'Fishing-Informed', 'lightskyblue', outfile=Path("library/FCD_MidAtlantic_Baseline/results/figures") / f"comparison_LCOE_waterfall{i+1}.png")
 
 
-    if gom:
+    if case==1:
+        print(report_df_humboldt_baseline)
+        print(report_df_humboldt_standardized)
+    elif case==2:
+        print(report_df_morrobay_baseline)
+        print(report_df_morrobay_standardized)
+
+    elif case==3:
         print(report_df_fcd_gulfofmaine_baseline)
         print(report_df_fcd_gulfofmaine_interrow)
-    else:
+    elif case==4:
         print(report_df_fcd_midatlantic_baseline)
         print(report_df_fcd_midatlantic_interrow)
 
@@ -1216,7 +1243,33 @@ if run:
 
 
 else:
-    if gom:
+    if case==1:
+        print("\n=== Creating Individual Waterfall Charts from Project Runs ===")
+        df_baseline_avg, df_interrow_avg = create_individual_waterfall_charts_from_project_runs(
+            baseline_results_dir="library/Standardized_Moorings/results",
+            interrow_results_dir="library/Standardized_Moorings2/results",
+            num_runs=NUM_RUNS
+        )
+        
+        print("\n=== Creating Comparison Waterfall Chart from LCOE Results ===")
+        df_baseline_lcoe, df_interrow_lcoe = create_comparison_waterfall_from_lcoe_results(
+            baseline_results_dir="library/Standardized_Moorings/results",
+            interrow_results_dir="library/Standardized_Moorings2/results"
+        )
+    elif case==2:
+        print("\n=== Creating Individual Waterfall Charts from Project Runs ===")
+        df_baseline_avg, df_interrow_avg = create_individual_waterfall_charts_from_project_runs(
+            baseline_results_dir="library/Standardized_Moorings3/results",
+            interrow_results_dir="library/Standardized_Moorings4/results",
+            num_runs=NUM_RUNS
+        )
+        
+        print("\n=== Creating Comparison Waterfall Chart from LCOE Results ===")
+        df_baseline_lcoe, df_interrow_lcoe = create_comparison_waterfall_from_lcoe_results(
+            baseline_results_dir="library/Standardized_Moorings3/results",
+            interrow_results_dir="library/Standardized_Moorings4/results"
+        )
+    elif case==3:
         print("\n=== Creating Individual Waterfall Charts from Project Runs ===")
         df_baseline_avg, df_interrow_avg = create_individual_waterfall_charts_from_project_runs(
             baseline_results_dir="library/FCD_Baseline/results",
@@ -1229,7 +1282,7 @@ else:
             baseline_results_dir="library/FCD_Baseline/results",
             interrow_results_dir="library/FCD_Interrow/results"
         )
-    else:
+    elif case==4:
         print("\n=== Creating Individual Waterfall Charts from Project Runs ===")
         df_baseline_avg, df_interrow_avg = create_individual_waterfall_charts_from_project_runs(
             baseline_results_dir="library/FCD_MidAtlantic_Baseline/results",
